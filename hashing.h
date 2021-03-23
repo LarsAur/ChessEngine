@@ -1,6 +1,7 @@
 #ifndef HASHING_H
 
 #define HASHING_H
+
 #define EVAL_LOOKUP_FAILED -1 // A board evaluation should not be able to have this evaluation
 
 #include <stdint.h>

@@ -3,6 +3,7 @@
 #define MAIN_H
 
 #include <stdint.h>
+#include "hashing.h"
 
 #define COLOR_MASK 0b11000
 #define BLACK   0b01000
@@ -28,7 +29,6 @@ typedef struct board_t
     uint8_t board[64];
 
     uint8_t castleRights;
-
     uint8_t turn;       // Black or whites turn to move
     uint8_t whiteKing;
     uint8_t blackKing;
@@ -37,6 +37,8 @@ typedef struct board_t
     uint16_t halfMoves; // Number of moves since the last capture or the last pawn move
 
     int8_t enPassantTarget;
+
+    uint64_t hash;
 } Board;
 
 #endif // MAIN_H

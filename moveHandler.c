@@ -521,6 +521,8 @@ void performMove(Move *p_move, Board *p_board)
 
     // Change turns
     p_board->turn = m_oppositeColor(p_board->turn);
+
+    // Update the hash
 }
 
 // Perform the opposite actions in the opposite order to performMove()

@@ -10,8 +10,6 @@ typedef struct move_t
     uint8_t from;
     uint8_t to;
 
-    Board prev_board;       
-
     uint8_t capture;        // The value of the piece that is captured, EMPTY is none is captured
     uint8_t castle;         // In the case of casteling, the king is to, from, and castle is set to 1
     uint8_t promotion;      // The piece to promote to
@@ -21,6 +19,7 @@ typedef struct move_t
     // Information about the previous board
     uint8_t prevCastleRights;
     int8_t prevEnPassantTarget;
+    uint64_t prevHash;
 
 } Move;
 
