@@ -24,7 +24,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
 {
     leafNodesEvaluated = 0;
     transpositionHits = 0;
-    p_tt = createHashmap(1024);
+    p_tt = createHashmap(4096);
     List *p_legalMoves = getLegalMoves(p_board);
     sort(p_legalMoves, p_board, m_movePriority);
     Board tmpBoard;
@@ -79,12 +79,6 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
 
     List *p_legalMoves = getLegalMoves(p_board);
 
-    if (depth == 0)
-    {
-        leafNodesEvaluated++;
-        return evaluateBoard(p_board, 0); //m_alphaBetaCaptures(p_board, alpha, beta);
-    }
-
     // Here we also want to handle potential move repetitions
     // If the depth is reach or there are no legal moves (checkmate or stalemate)
     if (p_legalMoves->length == 0)
@@ -92,6 +86,13 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
         return evaluateBoard(p_board, 1);
+    }
+
+    if (depth == 0)
+    {
+        leafNodesEvaluated++;
+        freeMoveList(p_legalMoves);
+        return evaluateBoard(p_board, 0); //m_alphaBetaCaptures(p_board, alpha, beta);
     }
 
     sort(p_legalMoves, p_board, m_movePriority);

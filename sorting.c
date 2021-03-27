@@ -53,7 +53,8 @@ Node *m_sortedMerge(Node *a, Node *b, Board *p_board, uint16_t (*orderEval)(Move
         result = b;
         result->p_next = m_sortedMerge(a, b->p_next, p_board, orderEval);
     }
-    return (result);
+    
+    return result;
 }
 
 void m_split(Node *src, Node **frontRef, Node **backRef)

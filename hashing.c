@@ -40,6 +40,7 @@ void freehashmap(Hashmap *p_hashmap)
         }
     }
 
+    free(p_hashmap->buckets);
     free(p_hashmap);
 }
 
@@ -213,7 +214,7 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
 void m_initZobrist()
 {
     initialized = 1;
-    srand(0xdeadbeef);
+    //srand(0xdeadbeef);
     for (uint8_t i = 0; i < 64; i++)
     {
         for (uint8_t j = 0; j < 12; j++)
