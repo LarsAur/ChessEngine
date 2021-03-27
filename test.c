@@ -115,7 +115,7 @@ void __test__moveTree()
 
     // calculate elapsed time by finding difference (end - begin) and
     // dividing the difference by CLOCKS_PER_SEC to convert to seconds
-    timeSpent += (double)(end - begin) / CLOCKS_PER_SEC;
+    timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
  
     printf("Time elapsed is %f seconds\n", timeSpent);
 
@@ -144,6 +144,34 @@ void __test__hashmap()
     {
         printf("The evaluation of the board in the hashmap was wrong");
     }
+
+
+    // Testing the update-hash function
+    Board board2; 
+    createBoardFormFEN("r3k2r/p1pppppp/8/Pp6/8/8/1PPPPPPP/R3K2R b KQkq b6 0 1", &board2);
+    List *p_legalMoves = getLegalMoves(&board2);
+
+    Node *p_node = p_legalMoves->p_head;
+    while(p_node != NULL)
+    {
+        performMove(p_node->p_move, &board2);
+
+        hash_t hash1 = board2.hash;
+        hash_t hash2 = zobristHash(&board2);
+        
+        if(hash1 != hash2)
+        {
+            printf("Hash did not match at this board\n");
+            printBoard(&board2);
+            printf("after performing:\n");
+            printMove(p_node->p_move);
+        }
+
+        undoMove(p_node->p_move, &board2);
+        p_node = p_node->p_next;
+    }
+
+    freeMoveList(p_legalMoves);
 }
 
 void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prevMove, uint64_t *p_counter, uint64_t *p_epCounter, uint64_t *p_castleCounter, uint64_t *p_checkMateCounter){

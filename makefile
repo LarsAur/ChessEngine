@@ -5,3 +5,6 @@ main: main.c fen.c utils.c moveHandler.c test.c search.c eval.c sorting.c hashin
 run: 
 	./chess.elf
 
+.PHONY: clean
+clean:
+	rm ./chess.elf

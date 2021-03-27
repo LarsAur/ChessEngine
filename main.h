@@ -3,7 +3,6 @@
 #define MAIN_H
 
 #include <stdint.h>
-#include "hashing.h"
 
 #define COLOR_MASK 0b11000
 #define BLACK   0b01000

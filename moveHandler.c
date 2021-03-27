@@ -5,6 +5,7 @@
 #include "main.h"
 #include "moveHandler.h"
 #include "utils.h"
+#include "hashing.h"
 
 void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square);
 void m_addRookMoves(List *p_list, Board *p_board, uint8_t square);
@@ -522,12 +523,17 @@ void performMove(Move *p_move, Board *p_board)
     // Change turns
     p_board->turn = m_oppositeColor(p_board->turn);
 
-    // Update the hash
+    // Update the hash of the new board, and save the previous hash
+    p_move->prevHash = p_board->hash;
+    updateZobristHash(p_board, p_move);
 }
 
 // Perform the opposite actions in the opposite order to performMove()
 void undoMove(Move *p_move, Board *p_board)
 {
+    // Set the hash back to the value before the move
+    p_board->hash = p_move->prevHash;
+
     // Change turn back
     p_board->turn = m_oppositeColor(p_board->turn);
 

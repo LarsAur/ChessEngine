@@ -39,5 +39,7 @@ evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, in
 
 Hashmap *createHashmap(uint64_t numBuckets);
 void freehashmap(Hashmap *hashmap);
+hash_t zobristHash(Board *p_board);
+hash_t updateZobristHash(Board *p_board, Move *p_move);
 
 #endif

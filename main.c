@@ -19,7 +19,7 @@ int main(void)
     //__test__kingMovement();
     //__test__knightMovement();
     __test__moveTree();
-    //__test__hashmap();
+    __test__hashmap();
 
     // srand((unsigned)time(NULL));
     // printf("SEED: %d\n", (unsigned)time(NULL));

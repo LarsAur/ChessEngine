@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "fen.h"
+#include "hashing.h"
 
 void createBoardFormFEN(char *FEN, Board *p_board)
 {
@@ -140,4 +141,6 @@ void createBoardFormFEN(char *FEN, Board *p_board)
 
     FEN+=2;
     p_board->fullMoves = *FEN - '0';
+
+    p_board->hash = zobristHash(p_board);
 }
