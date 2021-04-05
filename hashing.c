@@ -3,6 +3,7 @@
 #include "hashing.h"
 #include "main.h"
 #include "moveHandler.h"
+#include "utils.h"
 
 void m_initZobrist();
 hash_t zobristHash(Board *p_board);
@@ -49,6 +50,12 @@ void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint
 {
     hash_t hash = p_board->hash;
     uint64_t bucketId = hash % p_hashmap->numBuckets; // Fit hash into the number of buckets
+
+    if(p_board->hash == -1547217391707324455)
+    {
+        printf("Board with hash: -1547217391707324455\n");
+        printBoard(p_board);
+    }
 
     Bucket *p_newBucket = malloc(sizeof(Bucket));
     p_newBucket->hash = hash;
@@ -127,8 +134,8 @@ hash_t zobristHash(Board *p_board)
     {
         if (p_board->board[i] != EMPTY)
         {
-            // White pieces are 1-6 and black pieces are 7-12 (inclusive)
-            uint8_t j = (p_board->board[i] & TYPE_MASK) + 6 * ((p_board->board[i] & COLOR_MASK) == BLACK);
+            // White pieces are 1-6 and black pieces are 7-12 (inclusive), thus -1 to make the range 0-11
+            uint8_t j = (p_board->board[i] & TYPE_MASK) - 1 + 6 * ((p_board->board[i] & COLOR_MASK) == BLACK);
             hash ^= table[j][i];
         }
     }
@@ -149,7 +156,7 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
         if(p_move->to < p_move->from)
         {
             // XOR out the rook
-            uint8_t j = ROOK + 6 * ((p_board->board[p_move->to - 2] & COLOR_MASK) == BLACK);
+            uint8_t j = ROOK - 1 + 6 * ((p_board->board[p_move->to - 2] & COLOR_MASK) == BLACK);
             p_board->hash ^= table[j][p_move->to - 2];
             // XOR in the rook
             p_board->hash ^= table[j][p_move->to + 1];
@@ -158,7 +165,7 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
         else
         {
             // XOR out the rook
-            uint8_t j = ROOK + 6 * ((p_board->board[p_move->to + 1] & COLOR_MASK) == BLACK);
+            uint8_t j = ROOK - 1 + 6 * ((p_board->board[p_move->to + 1] & COLOR_MASK) == BLACK);
             p_board->hash ^= table[j][p_move->to + 1];
             // XOR in the rook
             p_board->hash ^= table[j][p_move->to - 1];
@@ -166,20 +173,20 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
     }
 
     // XOR out the moved piece from initial square, this is also XOR'ing in an empty square
-    // If the move was a promotion, a pawn has to be XOR'ed out
+    // If the move was a promotion, a pawn has to be XOR'ed out, and not the piece at the destination
     uint8_t j;
     if(p_move->promotion)
     {
-        j = PAWN + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
+        j = PAWN - 1 + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
     }
     else
     {
-        j = (p_board->board[p_move->to] & TYPE_MASK) + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
+        j = (p_board->board[p_move->to] & TYPE_MASK) - 1 + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
     }
     p_board->hash ^= table[j][p_move->from];
-
+    
     // XOR in the moved piece at destination
-    j = (p_board->board[p_move->to] & TYPE_MASK) + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
+    j = (p_board->board[p_move->to] & TYPE_MASK) - 1 + 6 * ((p_board->board[p_move->to] & COLOR_MASK) == BLACK);
     p_board->hash ^= table[j][p_move->to];
 
     // XOR out the possible captured piece
@@ -191,14 +198,14 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
             // Remove the piece from the double move square above the capture
             // if the capturer was white, the pawn was below the capture position
             uint8_t i = p_move->to + (p_board->turn == WHITE ? 8 : -8);
-            uint8_t j = PAWN + 6 * ((p_move->capture & COLOR_MASK) == BLACK);
+            uint8_t j = PAWN - 1 + 6 * ((p_move->capture & COLOR_MASK) == BLACK);
             p_board->hash ^= table[j][i];
         }
         else
         {
             // Remove the captured piece which was positioned at the capute point
             uint8_t i = p_move->to;
-            uint8_t j = (p_move->capture & TYPE_MASK) + 6 * ((p_move->capture & COLOR_MASK) == BLACK);
+            uint8_t j = (p_move->capture & TYPE_MASK) - 1 + 6 * ((p_move->capture & COLOR_MASK) == BLACK);
             p_board->hash ^= table[j][i];
         }
     }
@@ -214,7 +221,7 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
 void m_initZobrist()
 {
     initialized = 1;
-    //srand(0xdeadbeef);
+    srand(0xdeadbeef);
     for (uint8_t i = 0; i < 64; i++)
     {
         for (uint8_t j = 0; j < 12; j++)
