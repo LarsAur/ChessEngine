@@ -17,6 +17,7 @@ void m_addDirectionalSlideMoves(List *p_list, Board *p_board, uint8_t square, in
 void m_removeNodeFromList(List *p_list, Node *p_node);
 
 void m_filterCheckedMoves(List *p_list, Board *p_board);
+uint8_t m_isSlidingChecked(Board *p_board, uint8_t kingRank, uint8_t kingFile, int8_t dfile, int8_t drank, uint8_t type, uint8_t oppositeColor);
 
 void m_addMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture);
 void m_addSpecialMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture, uint8_t castle, uint8_t promotion, uint8_t enpassant, uint8_t pawnDoubleMove);
@@ -76,18 +77,32 @@ List *getPseudoLegalMoves(Board *p_board)
 // Adds the moves which the pawn on the square can perform to the list
 void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square)
 {
-    int8_t moveDirection = p_board->turn == WHITE ? 1 : -1;
-    uint8_t initialRank = p_board->turn == WHITE ? 1 : 6;
-    uint8_t promotionRank = p_board->turn == WHITE ? 7 : 0;
+    int8_t moveDirection;
+    uint8_t initialRank;
+    uint8_t promotionRank;
 
-    uint8_t currentRank = square / 8;
+    if (p_board->turn == WHITE)
+    {
+        moveDirection = 1;
+        initialRank = 1;
+        promotionRank = 7;
+    }
+    else
+    {
+        moveDirection = -1;
+        initialRank = 6;
+        promotionRank = 0;
+    }
+
+    uint8_t currentRank = square >> 3; // Devide by 8 (2^3)
     uint8_t currentFile = square % 8;
 
     // If pawns are placed on the promotion rank, they cannot move
-    if (currentRank == promotionRank)
+    // This will never happen (It might happen in a test)
+    /*if (currentRank == promotionRank)
     {
         return;
-    }
+    }*/
 
     uint8_t squareAhead = square + 8 * moveDirection;
 
@@ -106,12 +121,12 @@ void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square)
         else
         {
             m_addMoveToList(p_list, square, squareAhead, EMPTY);
-        }
 
-        // Double forward move from initial rank
-        if (currentRank == initialRank && p_board->board[squareAhead + 8 * moveDirection] == EMPTY)
-        {
-            m_addSpecialMoveToList(p_list, square, squareAhead + 8 * moveDirection, EMPTY, 0, 0, 0, 1);
+            // Double forward move from initial rank
+            if (currentRank == initialRank && p_board->board[squareAhead + 8 * moveDirection] == EMPTY)
+            {
+                m_addSpecialMoveToList(p_list, square, squareAhead + 8 * moveDirection, EMPTY, 0, 0, 0, 1);
+            }
         }
     }
 
@@ -207,8 +222,8 @@ void m_addQueenMoves(List *p_list, Board *p_board, uint8_t square)
 void m_addKingMoves(List *p_list, Board *p_board, uint8_t square)
 {
     // Basic movement
-    uint8_t currentRank = (square / 8);
-    uint8_t currentFile = (square % 8);
+    int8_t currentRank = (square / 8);
+    int8_t currentFile = (square % 8);
 
     // Pairs of deltas
     int8_t dRank[8] = {0, 0, -1, 1, 1, 1, -1, -1};
@@ -216,8 +231,8 @@ void m_addKingMoves(List *p_list, Board *p_board, uint8_t square)
 
     for (uint8_t i = 0; i < 8; i++)
     {
-        uint8_t targetRank = currentRank + dRank[i];
-        uint8_t targetFile = currentFile + dFile[i];
+        int8_t targetRank = currentRank + dRank[i];
+        int8_t targetFile = currentFile + dFile[i];
 
         // Check if the target is outside the board
         if (targetRank < 0 || targetRank > 7 || targetFile < 0 || targetFile > 7)
@@ -272,8 +287,8 @@ void m_addKnightMoves(List *p_list, Board *p_board, uint8_t square)
 
     for (uint8_t i = 0; i < 8; i++)
     {
-        uint8_t targetRank = currentRank + dRank[i];
-        uint8_t targetFile = currentFile + dFile[i];
+        int8_t targetRank = currentRank + dRank[i];
+        int8_t targetFile = currentFile + dFile[i];
 
         // Check if the target is outside the board
         if (targetRank < 0 || targetRank > 7 || targetFile < 0 || targetFile > 7)
@@ -334,15 +349,11 @@ void m_filterCheckedMoves(List *p_list, Board *p_board)
     while (p_node != NULL)
     {
         memcpy(&tmpBoard, p_board, sizeof(Board));
-        performMove(p_node->p_move , &tmpBoard);
-
-        // Find the square with the king
-        // The color is the color of the turn of p_board but the position is from the new board
-        uint8_t kingSquare = p_board->turn == WHITE ? tmpBoard.whiteKing : tmpBoard.blackKing;
+        performMove(p_node->p_move, &tmpBoard);
 
         Node *tmp = p_node->p_next;
 
-        if (isChecked(&tmpBoard, kingSquare))
+        if (isChecked(&tmpBoard, p_board->turn))
         {
             m_removeNodeFromList(p_list, p_node);
         }
@@ -352,8 +363,7 @@ void m_filterCheckedMoves(List *p_list, Board *p_board)
             memcpy(&tmpBoard, p_board, sizeof(Board));
 
             // Check if king is in check before casteling (not after as above)
-            tmpBoard.turn = m_oppositeColor(tmpBoard.turn); // Switching turn is needed for isChecked to find the correct moves
-            if (isChecked(&tmpBoard, (p_board->turn == WHITE ? 4 : 60)))
+            if (isChecked(&tmpBoard, p_board->turn))
             {
                 m_removeNodeFromList(p_list, p_node);
             }
@@ -378,7 +388,7 @@ void m_filterCheckedMoves(List *p_list, Board *p_board)
 
                 performMove(&middleMove, &tmpBoard);
 
-                if (isChecked(&tmpBoard, middleMove.to))
+                if (isChecked(&tmpBoard, p_board->turn))
                 {
                     m_removeNodeFromList(p_list, p_node);
                 }
@@ -390,39 +400,148 @@ void m_filterCheckedMoves(List *p_list, Board *p_board)
 }
 
 // Removes and frees all moves which are not captures from the list
-void filterNonCaptureMoves(List* p_legalMovesList)
+void filterNonCaptureMoves(List *p_legalMovesList)
 {
     Node *p_node = p_legalMovesList->p_head;
     while (p_node != NULL)
     {
         Node *tmp = p_node->p_next;
-        if(p_node->p_move->capture == EMPTY)
+        if (p_node->p_move->capture == EMPTY)
         {
             m_removeNodeFromList(p_legalMovesList, p_node);
         }
 
         p_node = tmp;
     }
-    
 }
 
 // Returns wether the king is in check in a board state
-uint8_t isChecked(Board *p_board, uint8_t kingSquare)
+uint8_t isChecked(Board *p_board, uint8_t color)
 {
-    List *p_pseudoLegalMoves = getPseudoLegalMoves(p_board);
-    Node *p_node = p_pseudoLegalMoves->p_head;
-    while (p_node != NULL)
+    uint8_t oppositeColor = m_oppositeColor(color);
+    uint8_t kingSquare = color == WHITE ? p_board->whiteKing : p_board->blackKing;
+
+    // Check all possible psitions which can target the king square
+    uint8_t kingRank = kingSquare >> 3;    // Devide by 8
+    uint8_t kingFile = kingSquare & 0b111; // modulo 8
+
+    // Pawns on diagonal
+    // White pawns cannot attack something on rank 0 and 1
+    if (color == BLACK && kingRank > 1)
     {
-        if (p_node->p_move->to == kingSquare)
+        // Down left
+        if (kingFile > 0 && p_board->board[kingSquare - 9] == (PAWN | WHITE))
         {
-            freeMoveList(p_pseudoLegalMoves);
             return 1;
         }
 
-        p_node = p_node->p_next;
+        // Down right
+        if(kingFile < 7 && p_board->board[kingSquare - 7] == (PAWN | WHITE))
+        {
+            return 1;
+        }
+    }
+    // Black pawn cannot attack something on rank 6 or 7
+    else if (color == WHITE && kingRank < 6)
+    {
+        // Up left
+        if (kingFile > 0 && (p_board->board[kingSquare + 7] == (PAWN | BLACK)))
+        {
+            return 1;
+        }
+
+        // Up right
+        if (kingFile < 7 && (p_board->board[kingSquare + 9] == (PAWN | BLACK)))
+        {
+            return 1;
+        }
     }
 
-    freeMoveList(p_pseudoLegalMoves);
+    // Knights in a knight move away
+
+    // Pairs of deltas for knight moves
+    int8_t knightDRank[8] = {1, 2, 2, 1, -1, -2, -2, -1};
+    int8_t knightDFile[8] = {-2, -1, 1, 2, 2, 1, -1, -2};
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        int8_t targetRank = kingRank + knightDRank[i];
+        int8_t targetFile = kingFile + knightDFile[i];
+
+        // Check if the target is inside the board
+        if (targetRank >= 0 && targetRank <= 7 && targetFile >= 0 && targetFile <= 7)
+        {
+            int8_t targetSquare = targetFile + targetRank * 8;
+            // Check if  the target square is a knight of the correct color
+            if (p_board->board[targetSquare] == (KNIGHT | oppositeColor))
+            {
+                return 1;
+            }
+        }
+    }
+
+    // King in any immediate square
+
+    // Pairs of deltas for king moves
+    int8_t kingDRank[8] = {0, 0, -1, 1, 1, 1, -1, -1};
+    int8_t kingDFile[8] = {-1, 1, 0, 0, 1, -1, 1, -1};
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        int8_t targetRank = kingRank + kingDRank[i];
+        int8_t targetFile = kingFile + kingDFile[i];
+
+        // Check if the target is inside the board
+        if (targetRank >= 0 && targetRank <= 7 && targetFile >= 0 && targetFile <= 7)
+        {
+            int8_t targetSquare = targetFile + targetRank * 8;
+            // Check if  the target square is a knight of the correct color
+            if (p_board->board[targetSquare] == (KING | oppositeColor))
+            {
+                return 1;
+            }
+        }
+    }
+
+    // Queen or bishop on diagonal
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, 1, BISHOP, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, 1, BISHOP, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, -1, BISHOP, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, -1, BISHOP, oppositeColor)) return 1;
+
+    // Queen or rook on file/rank
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, 0, 1, ROOK, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, 0,-1, ROOK, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, 0, ROOK, oppositeColor)) return 1;
+    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, 0, ROOK, oppositeColor)) return 1;
+
+    return 0;
+}
+
+// Checks in the direction of dfile and drank for the piece type including queen
+// type should be ROOK when one of the directions are 0 and the other is 1/-1 and BISHOP when the direction is diagonal
+// The function returns whether there is a piece (which can target the king) in the direction
+uint8_t m_isSlidingChecked(Board *p_board, uint8_t kingRank, uint8_t kingFile, int8_t dfile, int8_t drank, uint8_t type, uint8_t oppositeColor)
+{
+    uint8_t i = 1;
+    // While the search square is inside the board
+    while (kingRank + drank * i <= 7 && kingRank + drank * i >= 0 && kingFile + dfile * i <= 7 && kingFile + dfile * i >= 0)
+    {
+        uint8_t square = kingFile + dfile * i + (kingRank + drank * i) * 8;
+        if(p_board->board[square] != EMPTY)
+        {
+            if(p_board->board[square] == (oppositeColor | type) || p_board->board[square] == (oppositeColor | QUEEN))
+            {
+                return 1;
+            }
+
+            // Something is blocking
+            return 0;
+        }
+        i++;
+    }
+    
+
     return 0;
 }
 
@@ -430,6 +549,9 @@ uint8_t isChecked(Board *p_board, uint8_t kingSquare)
 // and the potential previous en passant target.
 void performMove(Move *p_move, Board *p_board)
 {
+    // Append the current possition to the board hostory
+    p_board->gameHashHistory[(p_board->fullMoves - 1) * 2 + (p_board->turn == BLACK)] = p_board->hash;
+
     // Add information about the current position before making the move, such that moves can be undone
     p_move->prevCastleRights = p_board->castleRights;
     p_move->prevEnPassantTarget = p_board->enPassantTarget;
@@ -502,22 +624,44 @@ void performMove(Move *p_move, Board *p_board)
     // This cannot be if else, because of the case where a1 rook takes a8 rook
     if (p_move->from == 0 || p_move->to == 0)
     {
-        p_board->castleRights &= (~(WHITE_QUEEN_CASTLE_MASK) & 0xf);
+        p_board->castleRights &= (~(WHITE_QUEEN_CASTLE_MASK)&0xf);
     }
 
     if (p_move->from == 7 || p_move->to == 7)
     {
-        p_board->castleRights &= (~(WHITE_KING_CASTLE_MASK) & 0xf);
+        p_board->castleRights &= (~(WHITE_KING_CASTLE_MASK)&0xf);
     }
 
     if (p_move->from == 56 || p_move->to == 56)
     {
-        p_board->castleRights &= (~(BLACK_QUEEN_CASTLE_MASK) & 0xf);
+        p_board->castleRights &= (~(BLACK_QUEEN_CASTLE_MASK)&0xf);
     }
 
     if (p_move->from == 63 || p_move->to == 63)
     {
-        p_board->castleRights &= (~(BLACK_KING_CASTLE_MASK) & 0xf);
+        p_board->castleRights &= (~(BLACK_KING_CASTLE_MASK)&0xf);
+    }
+
+    // Update the full move counter
+    // Only incremented after black moves
+    if (p_board->turn == BLACK)
+    {
+        p_board->fullMoves++;
+    }
+
+    // Update the number of half moves since last pawn advance or piece capture
+    p_move->prevHalfMoves = p_board->halfMoves;
+    if (p_move->capture)
+    {
+        p_board->halfMoves = 0;
+    }
+    else if ((p_board->board[p_move->to] & TYPE_MASK) == PAWN)
+    {
+        p_board->halfMoves = 0;
+    }
+    else
+    {
+        p_board->halfMoves++;
     }
 
     // Change turns
@@ -531,6 +675,15 @@ void performMove(Move *p_move, Board *p_board)
 // Perform the opposite actions in the opposite order to performMove()
 void undoMove(Move *p_move, Board *p_board)
 {
+    // If black just performed a move, decrease the fullmove counter
+    if (p_board->turn == WHITE)
+    {
+        p_board->fullMoves--;
+    }
+
+    // Set the half moves back to the value before the move
+    p_board->halfMoves = p_move->prevHalfMoves;
+
     // Set the hash back to the value before the move
     p_board->hash = p_move->prevHash;
 
@@ -595,6 +748,9 @@ void undoMove(Move *p_move, Board *p_board)
         // the enpassant pawn is placed earlier in undoMove()
         p_board->board[p_move->to] = EMPTY;
     }
+
+    // Remove the position from the board history
+    p_board->gameHashHistory[(p_board->fullMoves - 1) * 2 + (p_board->turn == BLACK)] = 0;
 }
 
 // Free all elements of the list, including the list itself

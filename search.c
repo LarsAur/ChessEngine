@@ -9,25 +9,35 @@
 #include "eval.h"
 #include "sorting.h"
 #include "hashing.h"
+#include "utils.h"
 
 #define INF 9223372036854775807
 
 int64_t m_alphabeta(Board *p_board, uint8_t depth, evaluation_t alpha, evaluation_t beta, uint8_t maximizer);
 int64_t m_alphaBetaCaptures(Board *p_board, evaluation_t alpha, evaluation_t beta);
 uint16_t m_movePriority(Move *p_move, Board *p_board);
+uint8_t m_numBoardRepeates(Board *p_board);
 
 Hashmap *p_tt;
 uint32_t leafNodesEvaluated = 0;
 uint32_t transpositionHits = 0;
+uint8_t color = 0; //Color of the player to find the best move for, this is set in findbestmove and passed to evaluation 
 
 Move findBestMove(Board *p_board, uint8_t depth)
 {
+    color = p_board->turn;
     leafNodesEvaluated = 0;
     transpositionHits = 0;
     p_tt = createHashmap(4096);
     List *p_legalMoves = getLegalMoves(p_board);
+
+    if(p_legalMoves->length == 0)
+    {
+        printf("No legal moves");
+        exit(EXIT_SUCCESS);
+    }
+
     sort(p_legalMoves, p_board, m_movePriority);
-    Board tmpBoard;
     Node *p_moveNode = p_legalMoves->p_head;
 
     Move bestMove;
@@ -64,12 +74,18 @@ Move findBestMove(Board *p_board, uint8_t depth)
     printf("Evaluation: %ld\n", value);
     printf("Leafnodes evaluated: %d\n", leafNodesEvaluated);
     printf("Transpositions hit: %d\n", transpositionHits);
+    printf("Phase: %d (0 = opening)\n", getPhase(p_board));
 
     return bestMove;
 }
 
 int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, uint8_t maximizer)
 {
+    if(m_numBoardRepeates(p_board) == 2)
+    {
+        return 0;
+    }
+
     int64_t transpositionLookup = getEvaluation(p_tt, p_board, depth, alpha, beta);
     if (transpositionLookup != EVAL_LOOKUP_FAILED)
     {
@@ -77,22 +93,36 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return transpositionLookup;
     }
 
+    // 50 move rule makes a draw
+    if (p_board->halfMoves == 50)
+    {
+        return 0;
+    }
+
     List *p_legalMoves = getLegalMoves(p_board);
 
-    // Here we also want to handle potential move repetitions
     // If the depth is reach or there are no legal moves (checkmate or stalemate)
     if (p_legalMoves->length == 0)
     {
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
-        return evaluateBoard(p_board, 1);
+        evaluation_t terminationEval = evaluateBoard(p_board, NO_LEGAL_MOVES, color);
+
+        if(terminationEval == STALEMATE)
+        {
+            return terminationEval;
+        }
+
+        // This makes a checkmate at a shorter depth more attractive
+        // For the opponent a shorter checkmate is also less attractive
+        return terminationEval * (1 + depth);
     }
 
     if (depth == 0)
     {
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
-        return evaluateBoard(p_board, 0); //m_alphaBetaCaptures(p_board, alpha, beta);
+        return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); //m_alphaBetaCaptures(p_board, alpha, beta);
     }
 
     sort(p_legalMoves, p_board, m_movePriority);
@@ -155,7 +185,7 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     // Get the evaluation of the board, to compair the position
     // without captures to the positions to with captures
     List *p_legalMoves = getLegalMoves(p_board);
-    int64_t eval = evaluateBoard(p_board, p_legalMoves->length == 0);
+    int64_t eval = evaluateBoard(p_board, p_legalMoves->length, color);
 
     if (eval >= beta)
     {
@@ -195,50 +225,32 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     return alpha;
 }
 
+uint8_t m_numBoardRepeates(Board *p_board)
+{
+    uint16_t tailIndex = (p_board->fullMoves - 1) * 2 + (p_board->turn == BLACK);
+    uint8_t repeats = 0;
+    for (uint16_t i = 0; i < tailIndex; i++)
+    {
+        repeats += p_board->gameHashHistory[i] == p_board->hash;
+    }
+    return repeats;
+}
+
+uint16_t pieceValues[7] =
+{
+    EMPTY,
+    PAWN_VALUE,
+    ROOK_VALUE,
+    KNIGHT_VALUE,
+    BISHOP_VALUE,
+    QUEEN_VALUE,
+    KING_VALUE,
+};
+
 uint16_t m_movePriority(Move *p_move, Board *p_board)
 {
-    uint16_t captureValue = 0;
-    switch (p_move->capture & TYPE_MASK)
-    {
-    case PAWN:
-        captureValue = PAWN_VALUE;
-        break;
-    case ROOK:
-        captureValue = ROOK_VALUE;
-        break;
-    case KNIGHT:
-        captureValue = KNIGHT_VALUE;
-        break;
-    case BISHOP:
-        captureValue = BISHOP_VALUE;
-        break;
-    case QUEEN:
-        captureValue = QUEEN_VALUE;
-        break;
-    }
-
-    uint16_t capturingValue = 0;
-    switch (p_board->board[p_move->from] & TYPE_MASK)
-    {
-    case PAWN:
-        capturingValue = PAWN_VALUE;
-        break;
-    case ROOK:
-        capturingValue = ROOK_VALUE;
-        break;
-    case KNIGHT:
-        capturingValue = KNIGHT_VALUE;
-        break;
-    case BISHOP:
-        capturingValue = BISHOP_VALUE;
-        break;
-    case QUEEN:
-        capturingValue = QUEEN_VALUE;
-        break;
-    case KING:
-        capturingValue = KING_VALUE;
-        break;
-    }
+    uint16_t captureValue = pieceValues[p_move->capture & TYPE_MASK];
+    uint16_t capturingValue = pieceValues[p_board->board[p_move->from] & TYPE_MASK];
 
     // 10 is just chosen to make the focus on what is captured and not what is capturing it
     // Negative because we want the high priorities first

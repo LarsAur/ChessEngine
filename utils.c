@@ -59,13 +59,13 @@ void printBoard(Board *p_board)
             }
             
             square++;
-            *square = ' ';
+            *square = '|';
             square++;
         }
 
         *square = '\0';
 
-        printf("%s\n", line);
+        printf("|%s\n", line);
     }
 }
 

@@ -32,12 +32,13 @@ typedef struct board_t
     uint8_t whiteKing;
     uint8_t blackKing;
 
-    uint16_t fullMoves; // Increments after black has moved
-    uint16_t halfMoves; // Number of moves since the last capture or the last pawn move
+    uint8_t fullMoves; // Increments after black has moved
+    uint8_t halfMoves; // Number of moves since the last capture or the last pawn move
 
     int8_t enPassantTarget;
 
     uint64_t hash;
+    uint64_t gameHashHistory[512]; // Contains the hashes of the previous board states
 } Board;
 
 #endif // MAIN_H

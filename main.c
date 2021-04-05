@@ -20,8 +20,9 @@ int main(void)
     //__test__knightMovement();
     //__test__moveTree();
     //__test__hashmap();
+    //__test__checkmate();
 
-    srand(1616866069);
+    //srand(1616866069);
     //srand((unsigned)time(NULL));
     //printf("SEED: %d\n", (unsigned)time(NULL));
 
@@ -31,7 +32,7 @@ int main(void)
 
     for (uint8_t i = 0; i < 250; i++)
     {
-        List *p_legalMoveList = getLegalMoves(p_board);
+        /*List *p_legalMoveList = getLegalMoves(p_board);
 
         if (p_legalMoveList->length == 0)
         {
@@ -39,9 +40,9 @@ int main(void)
             break;
         }
 
-        Node *p_node = p_legalMoveList->p_head;
-        
-        /*printf("Select move: \n");
+        Node *p_node = p_legalMoveList->p_head;*/
+        /*
+        printf("Select move: \n");
         printMoveList(p_legalMoveList);
         unsigned int index = p_legalMoveList->length + 1;
         while (index > p_legalMoveList->length)
@@ -49,7 +50,7 @@ int main(void)
             int len = scanf("%u", &index);
         }*/
         
-        uint8_t index = rand() % p_legalMoveList->length;
+        /*uint8_t index = rand() % p_legalMoveList->length;
         p_node = p_legalMoveList->p_head;
         
         for (uint8_t j = 0; j < index; j++)
@@ -58,13 +59,13 @@ int main(void)
         }
 
         performMove(p_node->p_move, p_board);
-        freeMoveList(p_legalMoveList);
+        freeMoveList(p_legalMoveList);*/
 
-        printBoard(p_board);
-        printf("------%s-----\n", p_board->turn == WHITE ? "WHITE" : "BLACK");
+        //printBoard(p_board);
+        //printf("------%s-----\n", p_board->turn == WHITE ? "WHITE" : "BLACK");
 
-        Move bestMove = findBestMove(p_board, 5);
-
+        Move bestMove = findBestMove(p_board, 4);
+        printf("Move number: %d\n", p_board->fullMoves);
         printf("Found best move: ");
         printMove(&bestMove);
 

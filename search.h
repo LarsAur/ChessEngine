@@ -9,5 +9,4 @@
 
 Move findBestMove(Board *p_board, uint8_t depth);
 
-
 #endif

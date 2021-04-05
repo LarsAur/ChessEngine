@@ -8,21 +8,23 @@
 #include "utils.h"
 #include "fen.h"
 #include "hashing.h"
+#include "search.h"
 
 void m_testNumberOfPseudoLegalMoves(char *FEN, uint16_t expected, char *msg);
 void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prevMove, uint64_t *p_counter, uint64_t *p_epCounter, uint64_t *p_castleCounter, uint64_t *p_checkMateCounter);
+void m_findCheckmateInNMoves(char *FEN, uint8_t ply);
 
 void __test__FEN()
 {
     Board board;
     createBoardFormFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", &board);
-    if(board.castleRights != 0b1111)
+    if (board.castleRights != 0b1111)
     {
         printf("FEN casteling error 1");
     }
 
     createBoardFormFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - - 0 1", &board);
-    if(board.castleRights != 0b0000)
+    if (board.castleRights != 0b0000)
     {
         printf("FEN casteling error 2");
     }
@@ -89,9 +91,9 @@ void __test__kingMovement()
 void __test__knightMovement()
 {
     m_testNumberOfPseudoLegalMoves("N7/8/8/8/8/8/8/8 w - - 0 1", 2, "Wrong number of knight moves from corner");
-    
+
     m_testNumberOfPseudoLegalMoves("8/3p1p2/2p3p1/4N3/2p3p1/3p1p2/8/8 w - - 0 1", 8, "Wrong number of knight moves to target 8 pieces");
-    
+
     m_testNumberOfPseudoLegalMoves("8/8/3P1P2/2P3P1/4N3/2P3P1/3P1P2/8 w - - 0 1", 10, "Wrong number of knight moves when locked by own pieces");
 }
 
@@ -107,7 +109,7 @@ void __test__moveTree()
 
     Board board;
     createBoardFormFEN(INITIAL_BOARD, &board);
-    
+
     double timeSpent = 0.0;
     clock_t begin = clock();
     m_recursiveMove(DEPTH, DEPTH, &board, NULL, &posCount, &epCount, &castleCount, &checkmates);
@@ -116,7 +118,7 @@ void __test__moveTree()
     // calculate elapsed time by finding difference (end - begin) and
     // dividing the difference by CLOCKS_PER_SEC to convert to seconds
     timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
- 
+
     printf("Time elapsed is %f seconds\n", timeSpent);
 
     printf("Number of positions in tree with depth %d: %ld\n", DEPTH, posCount);
@@ -133,33 +135,32 @@ void __test__hashmap()
     Move move;
     createBoardFormFEN(INITIAL_BOARD, &board);
 
-    appendToHashmap(p_hashmap, &board, evaluateBoard(&board, 0), 0, move, EXACT);
-    
-    if(!existsInHashmap(p_hashmap, &board))
+    appendToHashmap(p_hashmap, &board, evaluateBoard(&board, 0, board.turn), 0, move, EXACT);
+
+    if (!existsInHashmap(p_hashmap, &board))
     {
         printf("The board did not exist in the hashmap after being appended");
     }
 
-    if(getEvaluation(p_hashmap, &board, 0, 0, 0) != evaluateBoard(&board, 0))
+    if (getEvaluation(p_hashmap, &board, 0, 0, 0) != evaluateBoard(&board, 0, board.turn))
     {
         printf("The evaluation of the board in the hashmap was wrong");
     }
 
-
     // Testing the update-hash function
-    Board board2; 
+    Board board2;
     createBoardFormFEN("r3k2r/p1pppppp/8/Pp6/8/8/1PPPPPPP/R3K2R b KQkq b6 0 1", &board2);
     List *p_legalMoves = getLegalMoves(&board2);
 
     Node *p_node = p_legalMoves->p_head;
-    while(p_node != NULL)
+    while (p_node != NULL)
     {
         performMove(p_node->p_move, &board2);
 
         hash_t hash1 = board2.hash;
         hash_t hash2 = zobristHash(&board2);
-        
-        if(hash1 != hash2)
+
+        if (hash1 != hash2)
         {
             printf("Hash did not match at this board\n");
             printBoard(&board2);
@@ -174,29 +175,31 @@ void __test__hashmap()
     freeMoveList(p_legalMoves);
 }
 
-void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prevMove, uint64_t *p_counter, uint64_t *p_epCounter, uint64_t *p_castleCounter, uint64_t *p_checkMateCounter){
-    if(depth == 0){
+void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prevMove, uint64_t *p_counter, uint64_t *p_epCounter, uint64_t *p_castleCounter, uint64_t *p_checkMateCounter)
+{
+    if (depth == 0)
+    {
         (*p_counter)++;
 
-        if(p_prevMove->enPassant)
+        if (p_prevMove->enPassant)
         {
             (*p_epCounter)++;
         }
-        
-        if(p_prevMove->castle)
+
+        if (p_prevMove->castle)
         {
             (*p_castleCounter)++;
         }
 
         List *p_legalMoves = getLegalMoves(p_board);
 
-        if(p_legalMoves->length == 0)
+        if (p_legalMoves->length == 0)
         {
             (*p_checkMateCounter)++;
         }
 
         freeMoveList(p_legalMoves);
-        
+
         //printBoard(p_board);
         //printf("----------------\n");
 
@@ -206,16 +209,16 @@ void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prev
     List *p_legalMoves = getLegalMoves(p_board);
     Node *p_node = p_legalMoves->p_head;
 
-    if(p_legalMoves->length == 0)
+    if (p_legalMoves->length == 0)
     {
         (*p_checkMateCounter)++;
     }
 
-    for(uint8_t i = 0; i < p_legalMoves->length; i++)
-    {  
+    for (uint8_t i = 0; i < p_legalMoves->length; i++)
+    {
         performMove(p_node->p_move, p_board);
 
-        if(depth == height)
+        if (depth == height)
         {
             uint64_t count = 0;
             m_recursiveMove(depth - 1, height, p_board, p_node->p_move, &count, p_epCounter, p_castleCounter, p_checkMateCounter);
@@ -233,7 +236,7 @@ void m_recursiveMove(uint8_t depth, uint8_t height, Board *p_board, Move *p_prev
     }
 
     freeMoveList(p_legalMoves);
-}   
+}
 
 // Tests the board from a given FEN and checks if the correct number of pseudolegal moves are found
 void m_testNumberOfPseudoLegalMoves(char *FEN, uint16_t expected, char *msg)
@@ -251,4 +254,41 @@ void m_testNumberOfPseudoLegalMoves(char *FEN, uint16_t expected, char *msg)
 
     freeMoveList(p_pseudoMoves);
     free(p_board);
+}
+
+void __test__checkmate()
+{
+    m_findCheckmateInNMoves("4K3/1q2Q2/3k1p2/8/8/8/8/8 b - - 0 1", 1);
+    m_findCheckmateInNMoves("r1b2k1r/1p2bppp/p1B2q2/8/8/8/PPPQ1P1P/2KRR3 w - - 0 1", 3);
+    m_findCheckmateInNMoves("3n4/8/8/8/8/2k4b/K7/3q4 b - - 0 1", 3);
+    m_findCheckmateInNMoves("rn1q1rk1/ppp2pp1/3p4/2b1p1nQ/2b1P2N/2NP4/PPP2PP1/R3K2R w - - 0 1", 5);
+}
+
+void m_findCheckmateInNMoves(char *FEN, uint8_t ply)
+{
+    printf("Looking for checkmate in %d ply\n", ply);
+    Board board;
+    createBoardFormFEN(FEN, &board);
+
+    printBoard(&board);
+    for (uint8_t i = 0; i < ply; i++)
+    {
+        Move bestMove = findBestMove(&board, ply);
+        performMove(&bestMove, &board);
+        printMove(&bestMove);
+        printBoard(&board);
+    }
+
+    List *p_legalMoves = getLegalMoves(&board);
+
+    if(p_legalMoves->length == 0 && isChecked(&board, board.turn))
+    {
+        printf("Checkmate found in %d ply\n", ply);
+    }
+    else
+    {
+        printf("Unable to find checkmate in %d ply\n", ply);
+    }
+
+    freeMoveList(p_legalMoves);
 }

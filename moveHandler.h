@@ -20,7 +20,7 @@ typedef struct move_t
     uint8_t prevCastleRights;
     int8_t prevEnPassantTarget;
     uint64_t prevHash;
-
+    uint8_t prevHalfMoves;
 } Move;
 
 typedef struct node_t
