@@ -261,6 +261,7 @@ void __test__checkmate()
     m_findCheckmateInNMoves("4K3/1q2Q2/3k1p2/8/8/8/8/8 b - - 0 1", 1);
     m_findCheckmateInNMoves("r1b2k1r/1p2bppp/p1B2q2/8/8/8/PPPQ1P1P/2KRR3 w - - 0 1", 3);
     m_findCheckmateInNMoves("3n4/8/8/8/8/2k4b/K7/3q4 b - - 0 1", 3);
+    m_findCheckmateInNMoves("8/k7/8/8/P1N5/1P3B2/1BPP2PP/2KRR3 w - - 0 1", 3);
     m_findCheckmateInNMoves("rn1q1rk1/ppp2pp1/3p4/2b1p1nQ/2b1P2N/2NP4/PPP2PP1/R3K2R w - - 0 1", 5);
 }
 

@@ -236,7 +236,7 @@ uint8_t m_numBoardRepeates(Board *p_board)
     return repeats;
 }
 
-uint16_t pieceValues[7] =
+uint16_t piecePriority[7] =
 {
     EMPTY,
     PAWN_VALUE,
@@ -249,8 +249,8 @@ uint16_t pieceValues[7] =
 
 uint16_t m_movePriority(Move *p_move, Board *p_board)
 {
-    uint16_t captureValue = pieceValues[p_move->capture & TYPE_MASK];
-    uint16_t capturingValue = pieceValues[p_board->board[p_move->from] & TYPE_MASK];
+    uint16_t captureValue = piecePriority[p_move->capture & TYPE_MASK];
+    uint16_t capturingValue = piecePriority[p_board->board[p_move->from] & TYPE_MASK];
 
     // 10 is just chosen to make the focus on what is captured and not what is capturing it
     // Negative because we want the high priorities first

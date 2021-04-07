@@ -12,20 +12,20 @@
 #define QUEEN_PHASE 4
 #define TOTAL_PHASE PAWN_PHASE * 16 + KNIGHT_PHASE * 4 + BISHOP_PHASE * 4 + ROOK_PHASE * 4 + QUEEN_PHASE * 2
 
-uint8_t getPhase(Board *p_board);
+void m_inversePositionalValues(int8_t src[], int8_t dest[]);
 
-uint8_t const blackPawnWeights[64] = {
+int8_t emptyWeights[64] = {
+    0,	0,	0,	0,	0,	0,	0,	0,
     0,	0,	0,	0,	0,	0,	0,	0,	
-    50,	50,	50,	50,	50,	50,	50,	50,
-    40,	40,	40,	40,	40,	40,	40,	40,
-    30,	30,	30,	30,	30,	30,	30,	30,
-    20,	20,	20,	20,	20,	20,	20,	20,
-    10,	10,	10,	10,	10,	10,	10,	10,	
+    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,
     0,	0,	0,	0,	0,	0,	0,	0,
     0,	0,	0,	0,	0,	0,	0,	0,
 };
 
-uint8_t const whitePawnWeights[64] = {
+int8_t whitePawnOpeningWeights[64] = {
     0,	0,	0,	0,	0,	0,	0,	0,
     0,	0,	0,	0,	0,	0,	0,	0,	
     10,	10,	10,	10,	10,	10,	10,	10,	
@@ -36,29 +36,18 @@ uint8_t const whitePawnWeights[64] = {
     0,	0,	0,	0,	0,	0,	0,	0,
 };
 
-uint8_t const whiteKingWeights[64] = {
-    65,	60,	55,	50,	50,	55,	60,	65,
-    10,	10,	10,	20,	20,	10,	10,	10,	
-    0,	0,	0,	10,	10,	0,	0,	0,
-    0,	0,	0,	0,	0,	0,	0,	0,
+int8_t whiteRookOpeningWeights[64] = {
+    0,	10,	20,	30,	30,	20,	10,	0,
     0,	0,	0,	0,	0,	0,	0,	0,	
     0,	0,	0,	0,	0,	0,	0,	0,	
+    0,	0,	0,	0,	0,	0,  0,	0,	
     0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,	
+    50,	50,	50,	50,	50,	50,	50, 50,	
+    0,	0,	0,	40,	40,	0,	0,	0,
 };
 
-uint8_t const blackKingWeights[64] = {
-    0,	0,	0,	0,	0,	0,	0,	0,
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	10,	10,	0,	0,	0,
-    10,	10,	10,	20,	20,	10,	10,	10,
-    65,	60,	55,	50,	50,	55,	60,	65,
-};
-
-uint8_t const knightWeights[64] = {
+int8_t whiteKnightOpeningWeights[64] = {
     0,	0,	0,	0,	0,	0,	0,	0,
     0,	5,	10,	10,	10,	10,	5,	0,
     5,	10,	40,	40,	40,	40,	10,	5,
@@ -69,18 +58,7 @@ uint8_t const knightWeights[64] = {
     0,	0,	0,	0,	0,	0,	0,	0,
 };
 
-uint8_t const blackBishopWeights[64] = {
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	0,	0,	0,	0,	0,	0,	
-    0,	0,	40,	30,	30,	40,	0,	0,
-    0,	50,	50,	20,	20,	50,	50,	0,
-    10,	60,	40,	20,	20,	40,	60,	10,
-    0,	60,	40,	0,	0,	40,	60,	0,
-};
-
-uint8_t const whiteBishopWeights[64] = {
+int8_t whiteBishopOpeningWeights[64] = {
     0,	60,	40,	0,	0,	40,	60,	0,	
     10,	60,	40,	20,	20,	40,	60,	10,	
     0,	50,	50,	20,	20,	50,	50,	0,	
@@ -91,16 +69,126 @@ uint8_t const whiteBishopWeights[64] = {
     0,	0,	0,	0,	0,	0,	0,	0,
 };
 
-uint8_t const kingEndgameWeights[64] = {
+int8_t whiteKingOpeningWeights[64] = {
+    65,	60,	55,	50,	50,	55,	60,	65,
+    10,	10,	10,	20,	20,	10,	10,	10,	
+    0,	0,	0,	10,	10,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	0,	0,	0,	0,	0,	0,	0,	
+    0,	0,	0,	0,	0,	0,	0,	0,	
+    0,	0,	0,	0,	0,	0,	0,	0,	
+    0,	0,	0,	0,	0,	0,	0,	0,
+};
+
+int8_t whiteQueenOpeningWeights[64] = {
+    0,	0,	0,	0,	0,	0,	0,	0,
+    0,	10,	10,	10,	10,	10,	10,	0,	
+    0,	10,	40,	40,	40,	40,	10,	0,
+    0,	10,	40,	40,	40,	40,	10,	0,
+    0,	10,	40,	40,	40,	40,	10,	0,	
+    0,	10,	40,	40,	40,	40,	10,	0,	
+    0,	10,	10,	10,	10,	10,	10,	0,	
+    0,	0,	0,	0,	0,	0,	0,	0,
+};
+
+int8_t whiteKingEndgameWeights[64] = {
     0,   10, 20, 30, 30, 20, 10,  0,
     10,  50, 50, 50, 50, 50, 50, 10,
     20,  50, 100,100,100,100,50, 20,
-    30,  50, 100,150,150,100,50, 30,
-    30,  50, 100,150,150,100,50, 30,
+    30,  50, 100,120,120,100,50, 30,
+    30,  50, 100,120,120,100,50, 30,
     20,  50, 100,100,100,100,50, 20,
     10,  50, 50, 50, 50, 50, 50, 10,
     0,   10, 20, 30, 30, 20, 10,  0,
 };
+
+int8_t blackPawnOpeningWeights[64];
+int8_t blackRookOpeningWeights[64];
+int8_t blackKnightOpeningWeights[64];
+int8_t blackBishopOpeningWeights[64];
+int8_t blackKingOpeningWeights[64];
+int8_t blackQueenOpeningWeights[64];
+int8_t blackKingEndgameWeights[64];
+
+// "Rotates" the positional values to reflect the oposite colors positional value
+// NB: King and Queen squares are interchanged
+void m_inversePositionalValues(int8_t src[], int8_t dest[])
+{
+    for (uint8_t square = 0; square < 64; square++)
+    {
+        dest[square] = -src[63 - square];
+    }
+}
+
+// Values of each of the pieces, indexed by the piece color and type
+int64_t const pieceValues[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // Black pieces
+    -PAWN_VALUE,
+    -ROOK_VALUE,
+    -KNIGHT_VALUE,
+    -BISHOP_VALUE,
+    -KING_VALUE,
+    -QUEEN_VALUE,
+    0, 0,
+    // White pieces
+    PAWN_VALUE,
+    ROOK_VALUE,
+    KNIGHT_VALUE,
+    BISHOP_VALUE,
+    KING_VALUE,
+    QUEEN_VALUE,
+};
+
+int8_t *openingPostitionalValues[] = {
+    emptyWeights, 0, 0, 0, 0, 0, 0, 0, 0,
+    // Black pieces
+    blackPawnOpeningWeights,    // Pawn
+    blackRookOpeningWeights,    // Rook
+    blackKnightOpeningWeights,  // Knight
+    blackBishopOpeningWeights,  // Bishop
+    blackKingOpeningWeights,  // King
+    blackQueenOpeningWeights,   // Queen
+    0, 0,
+    // White pieces
+    whitePawnOpeningWeights,     // Pawn
+    whiteRookOpeningWeights,     // Rook
+    whiteKnightOpeningWeights,   // Knight
+    whiteBishopOpeningWeights,   // Bishop
+    whiteKingOpeningWeights,     // King
+    whiteQueenOpeningWeights,    // Queen
+};
+
+int8_t *endgamePostitionalValues[] = {
+    emptyWeights, 0, 0, 0, 0, 0, 0, 0, 0,
+    // Black pieces
+    blackPawnOpeningWeights,    // Pawn
+    blackRookOpeningWeights,    // Rook
+    blackKnightOpeningWeights,  // Knight
+    blackBishopOpeningWeights,  // Bishop
+    blackKnightOpeningWeights,  // King
+    blackQueenOpeningWeights,   // Queen
+    0, 0,
+    // White pieces
+    whitePawnOpeningWeights,     // Pawn
+    whiteRookOpeningWeights,     // Rook
+    whiteKnightOpeningWeights,   // Knight
+    whiteBishopOpeningWeights,   // Bishop
+    whiteKingEndgameWeights,     // King
+    whiteQueenOpeningWeights,    // Queen
+};
+
+// Initialize the positional weights of the black player based on the tables of the 
+void initEvalTables()
+{
+    m_inversePositionalValues(whitePawnOpeningWeights, blackPawnOpeningWeights);
+    m_inversePositionalValues(whiteRookOpeningWeights, blackRookOpeningWeights);
+    m_inversePositionalValues(whiteKnightOpeningWeights, blackKnightOpeningWeights);
+    m_inversePositionalValues(whiteBishopOpeningWeights, blackBishopOpeningWeights);
+    m_inversePositionalValues(whiteKingOpeningWeights, blackKingOpeningWeights);
+    m_inversePositionalValues(whiteQueenOpeningWeights, blackQueenOpeningWeights);
+    m_inversePositionalValues(whiteKingEndgameWeights, blackKingEndgameWeights);
+}
 
 evaluation_t evaluateBoard(Board *p_board, uint8_t noLegalMoves, uint8_t color)
 {
@@ -135,79 +223,29 @@ evaluation_t evaluateBoard(Board *p_board, uint8_t noLegalMoves, uint8_t color)
         return STALEMATE;
     }
 
-    // Material count and opening position
-    evaluation_t openingEvaluation = 0;
+    // Material count
+    evaluation_t materialCount = 0;
+    evaluation_t openingPositionalValue = 0;
+    evaluation_t endgamePostitionalValue = 0;
     for (uint8_t square = 0; square < 64; square++)
     {
-        evaluation_t pieceValue = 0;
-        switch (p_board->board[square] & TYPE_MASK)
-        {
-        case PAWN:
-            pieceValue = PAWN_VALUE + ((p_board->board[square] & COLOR_MASK) == WHITE ? whitePawnWeights[square] : blackPawnWeights[square]);
-            break;
-        case ROOK:
-            pieceValue = ROOK_VALUE;
-            break;
-        case KNIGHT:
-            pieceValue = KNIGHT_VALUE + knightWeights[square];
-            break;
-        case BISHOP:
-            pieceValue = BISHOP_VALUE + ((p_board->board[square] & COLOR_MASK) == WHITE ? whiteBishopWeights[square] : blackBishopWeights[square]);
-            break;
-        case QUEEN:
-            pieceValue = QUEEN_VALUE;
-            break;
-        case KING:
-            pieceValue = ((p_board->board[square] & COLOR_MASK) == WHITE ? whiteKingWeights[square] : blackKingWeights[square]);
-        default:
-            break;
-        }
-
-        // Select the color of the computer
-        openingEvaluation += (p_board->board[square] & COLOR_MASK) == BLACK ? pieceValue : -pieceValue;
+        materialCount += pieceValues[p_board->board[square]];
+        openingPositionalValue += openingPostitionalValues[p_board->board[square]][square];
+        endgamePostitionalValue += endgamePostitionalValues[p_board->board[square]][square];
     }
 
-    evaluation_t endgameEvaluation = 0;
-    for (uint8_t square = 0; square < 64; square++)
-    {
-        evaluation_t pieceValue = 0;
-        switch (p_board->board[square] & TYPE_MASK)
-        {
-        case PAWN:
-            pieceValue = PAWN_VALUE + ((p_board->board[square] & COLOR_MASK) == WHITE ? whitePawnWeights[square] : blackPawnWeights[square]);
-            break;
-        case ROOK:
-            pieceValue = ROOK_VALUE;
-            break;
-        case KNIGHT:
-            pieceValue = KNIGHT_VALUE + knightWeights[square];
-            break;
-        case BISHOP:
-            pieceValue = BISHOP_VALUE + ((p_board->board[square] & COLOR_MASK) == WHITE ? whiteBishopWeights[square] : blackBishopWeights[square]);
-            break;
-        case QUEEN:
-            pieceValue = QUEEN_VALUE;
-            break;
-        case KING:
-            pieceValue = kingEndgameWeights[square];
-        default:
-            break;
-        }
-
-        // Select the color of the computer
-        endgameEvaluation += (p_board->board[square] & COLOR_MASK) == BLACK ? pieceValue : -pieceValue;
-    }
+    evaluation_t openingEval = materialCount + openingPositionalValue;
+    evaluation_t endgameEval = materialCount + endgamePostitionalValue;
 
     uint8_t phase = getPhase(p_board);
-
-    evaluation_t eval = phase * endgameEvaluation + (TOTAL_PHASE - phase) * openingEvaluation;
+    evaluation_t eval = phase * endgameEval + (TOTAL_PHASE - phase) * openingEval;
 
     if (color == BLACK)
     {
-        return eval;
+        return -eval;
     }
 
-    return -eval;
+    return eval;
 }
 
 const uint8_t typeToPhase[7] =

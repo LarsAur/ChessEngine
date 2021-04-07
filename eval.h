@@ -21,5 +21,6 @@
 typedef int64_t evaluation_t;
 evaluation_t evaluateBoard(Board *p_board, uint8_t noLegalMoves, uint8_t color);
 uint8_t getPhase(Board *p_board);
+void initEvalTables();
 
 #endif
