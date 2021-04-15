@@ -5,6 +5,7 @@
 
 void printBoard(Board *p_board)
 {
+    printf("__|Turn: %s|__\n", p_board->turn == WHITE ? "White" : "Black");
     for (int8_t rank = 7; rank >= 0; rank--)
     {
         char line[18];
@@ -16,7 +17,7 @@ void printBoard(Board *p_board)
             if (piece == EMPTY)
             {
                 // Create black and white empty squares
-                if((file + rank) % 2 == 0)
+                if ((file + rank) % 2 == 0)
                 {
                     *square = ' ';
                 }
@@ -26,7 +27,7 @@ void printBoard(Board *p_board)
                 }
             }
             else
-            {   
+            {
                 // Select the type of the non empty square
                 switch (piece & TYPE_MASK)
                 {
@@ -55,7 +56,6 @@ void printBoard(Board *p_board)
                 {
                     *square = *square + ('A' - 'a');
                 }
-
             }
             
             square++;
@@ -69,18 +69,20 @@ void printBoard(Board *p_board)
     }
 }
 
-void printMove(Move *p_move){
-    uint8_t f_rank = p_move->from / 8; 
+void printMove(Move *p_move)
+{
+    uint8_t f_rank = p_move->from / 8;
     uint8_t f_file = p_move->from % 8;
 
-    uint8_t t_rank = p_move->to / 8; 
+    uint8_t t_rank = p_move->to / 8;
     uint8_t t_file = p_move->to % 8;
 
     printf("%c%d -> %c%d\n", 'a' + f_file, f_rank + 1, 'a' + t_file, t_rank + 1);
 }
 
-void printMoveList(List *p_list){
-    Node* p_node = p_list->p_head;
+void printMoveList(List *p_list)
+{
+    Node *p_node = p_list->p_head;
     uint8_t index = 0;
     while (p_node != NULL)
     {
@@ -90,4 +92,29 @@ void printMoveList(List *p_list){
         p_node = p_node->p_next;
         index++;
     }
+}
+
+// Lists all the available moves and prompts the user to select a move
+Move selectMove(Board *p_board)
+{
+    List *p_legalMoves = getLegalMoves(p_board);
+    printMoveList(p_legalMoves);
+
+    unsigned int index = p_legalMoves->length;
+    while (index >= p_legalMoves->length)
+    {
+        printf("Select move: \n");
+        int len = scanf("%u", &index);
+    }
+
+    Node *p_node = p_legalMoves->p_head;
+    for (uint8_t j = 0; j < index; j++)
+    {
+        p_node = p_node->p_next;
+    }
+
+    Move move = *(p_node->p_move);
+    freeMoveList(p_legalMoves);
+
+    return move;
 }

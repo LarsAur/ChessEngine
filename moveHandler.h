@@ -44,5 +44,6 @@ void performMove(Move *p_move, Board *p_board);
 void undoMove(Move *p_move, Board *p_board);
 void filterNonCaptureMoves(List* p_legalMovesList);
 uint8_t isChecked(Board *p_board, uint8_t color);
+int8_t isCheckmate(Board *p_board);
 
 #endif // MOVE_HANDLER_H

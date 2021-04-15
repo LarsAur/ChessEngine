@@ -415,6 +415,51 @@ void filterNonCaptureMoves(List *p_legalMovesList)
     }
 }
 
+// This is an "expensive" function checking if the current player has no moves and if it is checkmate/stalemate
+// In the case of checkmate the color of the winner is returned. In the case of stalemate 1 is returned. 0 is returned if legal moves exist.
+// The function also consider board repetition, and 50 move rule
+int8_t isCheckmate(Board *p_board)
+{
+    // Stalemate on 50 move rule
+    if(p_board->halfMoves == 50)
+    {
+        return 1;
+    }
+
+    // Stalemate board repetition
+    uint16_t tailIndex = (p_board->fullMoves - 1) * 2 + (p_board->turn == BLACK);
+    uint8_t repeats = 0;
+    for (uint16_t i = 0; i < tailIndex; i++)
+    {
+        repeats += p_board->gameHashHistory[i] == p_board->hash;
+    }
+    
+    // The board is only added to the list once a move is performed 'from' the board
+    // Thus the position is repeated 3 times if it is seen 2 times before
+    if(repeats >= 2)
+    {
+        return 1;
+    }
+
+    List *p_legalMoves = getLegalMoves(p_board);
+    uint8_t num_moves = p_legalMoves->length;
+    freeMoveList(p_legalMoves);
+
+    // Legal moves exist
+    if(num_moves > 0)
+    {
+        return 0;
+    }
+
+    if(isChecked(p_board, p_board->turn))
+    {
+        return p_board->turn == WHITE ? BLACK : WHITE;
+    }
+
+    // If the current player is not in check it is stalemate
+    return 1;
+}
+
 // Returns wether the king is in check in a board state
 uint8_t isChecked(Board *p_board, uint8_t color)
 {
@@ -540,7 +585,6 @@ uint8_t m_isSlidingChecked(Board *p_board, uint8_t kingRank, uint8_t kingFile, i
         }
         i++;
     }
-    
 
     return 0;
 }

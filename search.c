@@ -18,7 +18,7 @@ int64_t m_alphaBetaCaptures(Board *p_board, evaluation_t alpha, evaluation_t bet
 uint16_t m_movePriority(Move *p_move, Board *p_board);
 uint8_t m_numBoardRepeates(Board *p_board);
 
-Hashmap *p_tt;
+Hashmap *p_tt = NULL;
 uint32_t leafNodesEvaluated = 0;
 uint32_t transpositionHits = 0;
 uint8_t color = 0; //Color of the player to find the best move for, this is set in findbestmove and passed to evaluation 
@@ -30,13 +30,6 @@ Move findBestMove(Board *p_board, uint8_t depth)
     transpositionHits = 0;
     p_tt = createHashmap(4096);
     List *p_legalMoves = getLegalMoves(p_board);
-
-    if(p_legalMoves->length == 0)
-    {
-        printf("No legal moves");
-        exit(EXIT_SUCCESS);
-    }
-
     sort(p_legalMoves, p_board, m_movePriority);
     Node *p_moveNode = p_legalMoves->p_head;
 
@@ -75,6 +68,8 @@ Move findBestMove(Board *p_board, uint8_t depth)
     printf("Leafnodes evaluated: %d\n", leafNodesEvaluated);
     printf("Transpositions hit: %d\n", transpositionHits);
     printf("Phase: %d (0 = opening)\n", getPhase(p_board));
+    printf("Best move: ");
+    printMove(&bestMove);
 
     return bestMove;
 }
@@ -122,7 +117,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
     {
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
-        return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); //m_alphaBetaCaptures(p_board, alpha, beta);
+        return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*m_alphaBetaCaptures(p_board, -beta, -alpha); */
     }
 
     sort(p_legalMoves, p_board, m_movePriority);
@@ -185,7 +180,7 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     // Get the evaluation of the board, to compair the position
     // without captures to the positions to with captures
     List *p_legalMoves = getLegalMoves(p_board);
-    int64_t eval = evaluateBoard(p_board, p_legalMoves->length, color);
+    int64_t eval = evaluateBoard(p_board, p_legalMoves->length ? LEGAL_MOVES_EXIST : NO_LEGAL_MOVES, color);
 
     if (eval >= beta)
     {

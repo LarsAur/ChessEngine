@@ -29,8 +29,8 @@ typedef struct board_t
 
     uint8_t castleRights;
     uint8_t turn;       // Black or whites turn to move
-    uint8_t whiteKing;
-    uint8_t blackKing;
+    uint8_t whiteKing;  // Position of the whte king
+    uint8_t blackKing;  // Position of the black king
 
     uint8_t fullMoves; // Increments after black has moved
     uint8_t halfMoves; // Number of moves since the last capture or the last pawn move
