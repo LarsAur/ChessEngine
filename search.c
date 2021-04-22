@@ -117,7 +117,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
     {
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
-        return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*m_alphaBetaCaptures(p_board, -beta, -alpha); */
+        return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*-m_alphaBetaCaptures(p_board, -beta, -alpha);*/
     }
 
     sort(p_legalMoves, p_board, m_movePriority);

@@ -25,6 +25,7 @@ int main(void)
     //__test__moveTree();
     //__test__hashmap();
     //__test__checkmate();
+    //__test__evaluation();
 
     Board board;
     Board *p_board = &board;
@@ -33,18 +34,22 @@ int main(void)
 
     int8_t boardStatus;
 
+    printBoard(p_board);
     for (uint8_t i = 0; i < 100; i++)
     {
         printf("Move number: %d\n", p_board->fullMoves);
         
         m_playComputerTurn(p_board, 4);
+        printf("EVAL: %ld\n", evaluateBoard(p_board, LEGAL_MOVES_EXIST, WHITE));
+        //m_playUserTurn(p_board);
 
         boardStatus = isCheckmate(p_board);
         if (boardStatus)
             break;
 
-        m_playUserTurn(p_board);
         //m_playComputerTurn(p_board, 4);
+        m_playUserTurn(p_board);
+        printf("EVAL: %ld\n", evaluateBoard(p_board, LEGAL_MOVES_EXIST, WHITE));
 
         boardStatus = isCheckmate(p_board);
         if (boardStatus)

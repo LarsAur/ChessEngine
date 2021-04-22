@@ -10,5 +10,6 @@ void __test__knightMovement();
 void __test__moveTree();
 void __test__hashmap();
 void __test__checkmate();
+void __test__evaluation();
 
 #endif

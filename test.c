@@ -293,3 +293,32 @@ void m_findCheckmateInNMoves(char *FEN, uint8_t ply)
 
     freeMoveList(p_legalMoves);
 }
+
+void __test__evaluation()
+{
+    initEvalTables();
+    Board board1, board2;
+    evaluation_t eval1, eval2;
+    
+    createBoardFormFEN("rnbqkbnr/pp3ppp/2p1p3/1N1p4/8/5N2/PPPPPPPP/R1BQKB1R w KQkq - 0 4", &board1);
+    createBoardFormFEN("rnbqkbnr/pp3ppp/4p3/1p1p4/P7/5N2/1PPPPPPP/R1BQKB1R w KQkq - 0 5", &board2);
+
+    printBoard(&board1);
+    for(int8_t i = 4 ; i > 0; i--)
+    {
+        Move bestMove = findBestMove(&board1, i);
+        performMove(&bestMove, &board1);
+        printBoard(&board1);
+    }
+
+    eval1 = evaluateBoard(&board1, LEGAL_MOVES_EXIST, WHITE);
+    eval2 = evaluateBoard(&board2, LEGAL_MOVES_EXIST, WHITE);
+
+    printf("Eval1: %ld\n", eval1);
+    printf("Eval2: %ld\n", eval2);
+
+    if(eval1 <= eval2)
+    {
+        printf("Error in eval, knight value is too low");
+    }
+}
