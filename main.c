@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "main.h"
 #include "fen.h"
@@ -9,6 +8,7 @@
 #include "search.h"
 #include "hashing.h"
 #include "eval.h"
+#include "openingBook.h"
 
 #include "test.h"
 
@@ -26,6 +26,10 @@ int main(void)
     //__test__hashmap();
     //__test__checkmate();
     //__test__evaluation();
+
+
+    Book book;
+    generateBook(&book, 10, "games.txt");
 
     Board board;
     Board *p_board = &board;
