@@ -104,7 +104,11 @@ Move selectMove(Board *p_board)
     while (index >= p_legalMoves->length)
     {
         printf("Select move: \n");
-        int len = scanf("%u", &index);
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wunused-result"
+        scanf("%u", &index);
+        fgetc(stdin); // Empty the stdin buffer
+        #pragma GCC diagnostic pop
     }
 
     Node *p_node = p_legalMoves->p_head;

@@ -28,7 +28,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
     color = p_board->turn;
     leafNodesEvaluated = 0;
     transpositionHits = 0;
-    p_tt = createHashmap(4096);
+    if(!p_tt) p_tt = createHashmap(2 << 20);
     List *p_legalMoves = getLegalMoves(p_board);
     sort(p_legalMoves, p_board, m_movePriority);
     Node *p_moveNode = p_legalMoves->p_head;
@@ -54,7 +54,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
         alpha = fmaxl(alpha, value);
         if (alpha >= beta)
         {
-            appendToHashmap(p_tt, p_board, beta, depth, *p_moveNode->p_move, LOWER_BOUND);
+            appendToHashmap(p_tt, p_board, beta, depth, LOWER_BOUND);
             break;
         }
 
@@ -62,11 +62,12 @@ Move findBestMove(Board *p_board, uint8_t depth)
     }
 
     freeMoveList(p_legalMoves);
-    freehashmap(p_tt);
+    //freehashmap(p_tt);
 
     printf("Evaluation: %ld\n", value);
     printf("Leafnodes evaluated: %d\n", leafNodesEvaluated);
     printf("Transpositions hit: %d\n", transpositionHits);
+    printf("Table Size: %ld\n", p_tt->size);
     printf("Phase: %d (0 = opening)\n", getPhase(p_board));
     printf("Best move: ");
     printMove(&bestMove);
@@ -136,7 +137,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
             alpha = fmaxl(alpha, value);
             if (alpha >= beta)
             {
-                appendToHashmap(p_tt, p_board, beta, depth, *p_moveNode->p_move, LOWER_BOUND);
+                appendToHashmap(p_tt, p_board, beta, depth, LOWER_BOUND);
                 wasCut = 1;
                 break;
             }
@@ -156,7 +157,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
             beta = fminl(beta, value);
             if (beta <= alpha)
             {
-                appendToHashmap(p_tt, p_board, alpha, depth, *p_moveNode->p_move, UPPER_BOUND);
+                appendToHashmap(p_tt, p_board, alpha, depth, UPPER_BOUND);
                 wasCut = 1;
                 break;
             }
@@ -167,8 +168,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
 
     if (!wasCut)
     {
-        Move randomMove;
-        appendToHashmap(p_tt, p_board, value, depth, randomMove, EXACT);
+        appendToHashmap(p_tt, p_board, value, depth, EXACT);
     }
 
     freeMoveList(p_legalMoves);

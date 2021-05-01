@@ -132,10 +132,9 @@ void __test__hashmap()
     Hashmap *p_hashmap = createHashmap(1024);
 
     Board board;
-    Move move;
     createBoardFormFEN(INITIAL_BOARD, &board);
 
-    appendToHashmap(p_hashmap, &board, evaluateBoard(&board, 0, board.turn), 0, move, EXACT);
+    appendToHashmap(p_hashmap, &board, evaluateBoard(&board, 0, board.turn), 0, EXACT);
 
     if (!existsInHashmap(p_hashmap, &board))
     {
