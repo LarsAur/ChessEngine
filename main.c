@@ -9,11 +9,12 @@
 #include "search.h"
 #include "hashing.h"
 #include "eval.h"
+#include "book.h"
 
 #include "test.h"
 
-void m_playComputerTurn(Board *p_board, uint8_t ply);
-void m_playUserTurn(Board *p_board);
+void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
+void m_playUserTurn(Board *p_board, Book *book);
 
 int main(void)
 {
@@ -25,6 +26,11 @@ int main(void)
     //__test__moveTree();
     //__test__hashmap();
     //__test__checkmate();
+    //__test__evaluation();
+
+    Book book;
+    generateBook(&book, 25, "uci.txt");
+    book.status = BOOK_ENDED;
 
     Board board;
     Board *p_board = &board;
@@ -33,18 +39,22 @@ int main(void)
 
     int8_t boardStatus;
 
+    printBoard(p_board);
     for (uint8_t i = 0; i < 100; i++)
     {
         printf("Move number: %d\n", p_board->fullMoves);
-        
-        m_playComputerTurn(p_board, 4);
+
+        m_playComputerTurn(p_board, &book, 5);
+        //m_playUserTurn(p_board, &book);
+        printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
         boardStatus = isCheckmate(p_board);
         if (boardStatus)
             break;
 
-        m_playUserTurn(p_board);
-        //m_playComputerTurn(p_board, 4);
+        //m_playComputerTurn(p_board, &book, 4);
+        m_playUserTurn(p_board, &book);
+        printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
         boardStatus = isCheckmate(p_board);
         if (boardStatus)
@@ -68,20 +78,37 @@ int main(void)
         printf("Game terminated!");
     }
 
+    freeBook(&book);
+
     printf("Exit success\n");
     return 0;
 }
 
-void m_playComputerTurn(Board *p_board, uint8_t ply)
+void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
 {
-    Move bestMove = findBestMove(p_board, ply);
+    clock_t start = clock(), diff;
+
+    Move bestMove;
+    if (book->status == BOOK_READY)
+    {
+        getNextMove(book, &bestMove);
+    }
+    else
+    {
+        bestMove = findBestMove(p_board, ply);
+    }
+
+    diff = clock() - start;
+    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
     performMove(&bestMove, p_board);
     printBoard(p_board);
 }
 
-void m_playUserTurn(Board *p_board)
+void m_playUserTurn(Board *p_board, Book *book)
 {
-    Move slectedMove = selectMove(p_board);
-    performMove(&slectedMove, p_board);
+    Move selectedMove = selectMove(p_board);
+    advanceInBook(book, selectedMove);
+    performMove(&selectedMove, p_board);
     printBoard(p_board);
 }

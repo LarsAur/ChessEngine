@@ -12,6 +12,7 @@ Hashmap *createHashmap(uint64_t numBuckets)
 {
     Hashmap *p_hashmap = malloc(sizeof(Hashmap));
     p_hashmap->numBuckets = numBuckets;
+    p_hashmap->size = 0;
 
     Bucket **buckets = malloc(numBuckets * sizeof(Bucket *));
     for (uint64_t i = 0; i < numBuckets; i++)
@@ -46,27 +47,37 @@ void freehashmap(Hashmap *p_hashmap)
 }
 
 // Adds the the board with the evaluation to the hashmap
-void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, Move move, EvalType evalType)
+void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, EvalType evalType)
 {
     hash_t hash = p_board->hash;
     uint64_t bucketId = hash % p_hashmap->numBuckets; // Fit hash into the number of buckets
 
-    if(p_board->hash == -1547217391707324455)
+
+    // Loop through the bucket and check if there are any matching hashes with lower depths and replace them
+    Bucket *p_bucket = p_hashmap->buckets[bucketId];
+    while (p_bucket)
     {
-        printf("Board with hash: -1547217391707324455\n");
-        printBoard(p_board);
+        if(p_bucket->hash == hash && p_bucket->depth < depth && p_bucket->evalType == evalType)
+        {
+            p_bucket->depth = depth;
+            p_bucket->evalScore = eval;
+            p_bucket->evalType = evalType;
+            return;
+        }
+        p_bucket = p_bucket->p_next;
     }
 
+    // If there are no matches, create a new bucket
     Bucket *p_newBucket = malloc(sizeof(Bucket));
     p_newBucket->hash = hash;
     p_newBucket->evalScore = eval;
     p_newBucket->depth = depth;
     p_newBucket->evalType = evalType;
-    p_newBucket->move = move;
 
     // Put the new bucket element at the front of the linked list
     p_newBucket->p_next = p_hashmap->buckets[bucketId];
     p_hashmap->buckets[bucketId] = p_newBucket;
+    p_hashmap->size++;
 }
 
 // Checks if the board exists in the hashmap
@@ -140,7 +151,8 @@ hash_t zobristHash(Board *p_board)
         }
     }
 
-    hash ^= p_board->enPassantTarget | p_board->castleRights << 8 | p_board->turn << 10;
+    // Enpassant target have to be negated because it is -1 (0xffffffff) when there is no target
+    hash ^= (~p_board->enPassantTarget | (p_board->castleRights << 8) | (p_board->turn << 16));
 
     return hash;
 }
@@ -211,9 +223,9 @@ hash_t updateZobristHash(Board *p_board, Move *p_move)
     }
 
     // XOR out the previous castle-rights, enpassantTarget and turn
-    p_board->hash ^= p_move->prevEnPassantTarget | p_move->prevCastleRights << 8 | (p_board->turn == WHITE ? BLACK << 10 : WHITE << 10);
+    p_board->hash ^= (~p_move->prevEnPassantTarget) | (p_move->prevCastleRights << 8) | (p_board->turn == WHITE ? BLACK << 16 : WHITE << 16);
     // XOR in the new castle-rights, enpassantTarget and turn
-    p_board->hash ^= p_board->enPassantTarget | p_board->castleRights << 8 | p_board->turn << 10;
+    p_board->hash ^= (~p_board->enPassantTarget) | (p_board->castleRights << 8) | (p_board->turn << 16);
 
     return p_board->hash;
 }

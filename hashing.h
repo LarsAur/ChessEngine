@@ -21,6 +21,7 @@ typedef struct hashmap_t
 {
     uint64_t numBuckets;
     struct bucket_t **buckets;
+    uint64_t size;
 } Hashmap;
 
 typedef struct bucket_t
@@ -29,11 +30,10 @@ typedef struct bucket_t
     evaluation_t evalScore;
     EvalType evalType;
     uint8_t depth;
-    Move move;
     struct bucket_t *p_next;
 } Bucket;
 
-void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, Move move, EvalType evalType);
+void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, EvalType evalType);
 uint8_t existsInHashmap(Hashmap *p_hashmap, Board *p_board);
 evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, int64_t alpha, int64_t beta);
 

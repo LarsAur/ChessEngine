@@ -133,7 +133,10 @@ void createBoardFormFEN(char *FEN, Board *p_board)
     else
     {
         // Calculated as file + rank * 8 
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wsequence-point"
         p_board->enPassantTarget = (*FEN - 'a') + (*(FEN++) - '0') * 8;
+        #pragma GCC diagnostic pop
     }
 
     FEN+=2;

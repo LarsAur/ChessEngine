@@ -223,7 +223,6 @@ evaluation_t evaluateBoard(Board *p_board, uint8_t noLegalMoves, uint8_t color)
         return STALEMATE;
     }
 
-    // Material count
     evaluation_t materialCount = 0;
     evaluation_t openingPositionalValue = 0;
     evaluation_t endgamePostitionalValue = 0;
