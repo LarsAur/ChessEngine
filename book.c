@@ -176,7 +176,6 @@ void generateBook(Book *book, uint8_t depth, char *filename)
             // check if it contains the final score eg. "1/2-1/2" or "1-0"
             if(uci == NULL || uci[0] == '1' || uci[0] == '0')
             {
-                printf("Break");
                 break;
             }
         }
@@ -201,7 +200,13 @@ void advanceInBook(Book *book, Move move)
     // Loop through all the possible moves and check if it matches any of the possible moves
     for (uint8_t i = 0; i < book->currentNode->nNodes; i++)
     {
-        if(!memcmp(&move, &book->currentNode->moves[i], sizeof(Move)))
+    
+        printMove(&book->currentNode->moves[i]);
+        
+        if(move.from == book->currentNode->moves[i].from
+            && move.to == book->currentNode->moves[i].to
+            && move.promotion == book->currentNode->moves[i].promotion
+        )
         {
             uint64_t nextNodeIndex = book->currentNode->nodeIndices[i];
             book->currentNode = &book->nodes[nextNodeIndex];

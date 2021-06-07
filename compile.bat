@@ -1,0 +1,1 @@
+emcc -O3 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS="['cwrap']" -s EXPORTED_FUNCTIONS="['_getTurn', '_playAIMove', '_performMatchingMove', '_resetBoard','_getCurrentBoardSize', '_getCurrentBoardPointer', '_isBoardCheckmate', '_init']" --preload-file uci.txt main.c fen.c utils.c moveHandler.c search.c eval.c sorting.c hashing.c book.c wasm.c -lm

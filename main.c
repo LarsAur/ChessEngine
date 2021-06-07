@@ -18,29 +18,13 @@ void m_playUserTurn(Board *p_board, Book *book);
 
 int main(void)
 {
-    //__test__FEN();
-    //__test__pawnMovement();
-    //__test__slidingMovement();
-    //__test__kingMovement();
-    //__test__knightMovement();
-    //__test__moveTree();
-    //__test__hashmap();
-    //__test__checkmate();
-    //__test__evaluation();
 
-    Book book;
-    generateBook(&book, 25, "uci.txt");
-    book.status = BOOK_ENDED;
+    //createBoardFormFEN(INITIAL_BOARD, &board);
 
-    Board board;
-    Board *p_board = &board;
-    createBoardFormFEN(INITIAL_BOARD, p_board);
-    initEvalTables();
+    //int8_t boardStatus = 0;
 
-    int8_t boardStatus;
-
-    printBoard(p_board);
-    for (uint8_t i = 0; i < 100; i++)
+    //printBoard(p_board);
+    /*for (uint8_t i = 0; i < 100; i++)
     {
         printf("Move number: %d\n", p_board->fullMoves);
 
@@ -59,8 +43,8 @@ int main(void)
         boardStatus = isCheckmate(p_board);
         if (boardStatus)
             break;
-    }
-
+    }*/
+    /*
     if (boardStatus == 1)
     {
         printf("Stalemate!\n");
@@ -78,8 +62,8 @@ int main(void)
         printf("Game terminated!");
     }
 
-    freeBook(&book);
-
+    //freeBook(&book);
+    */
     printf("Exit success\n");
     return 0;
 }

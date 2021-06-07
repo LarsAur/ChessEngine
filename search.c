@@ -28,7 +28,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
     color = p_board->turn;
     leafNodesEvaluated = 0;
     transpositionHits = 0;
-    if(!p_tt) p_tt = createHashmap(2 << 20);
+    if(!p_tt) p_tt = createHashmap(1 << 20);
     List *p_legalMoves = getLegalMoves(p_board);
     sort(p_legalMoves, p_board, m_movePriority);
     Node *p_moveNode = p_legalMoves->p_head;
