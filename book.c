@@ -176,7 +176,6 @@ void generateBook(Book *book, uint8_t depth, char *filename)
             // check if it contains the final score eg. "1/2-1/2" or "1-0"
             if(uci == NULL || uci[0] == '1' || uci[0] == '0')
             {
-                printf("Break");
                 break;
             }
         }

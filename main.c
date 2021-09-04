@@ -30,7 +30,6 @@ int main(void)
 
     Book book;
     generateBook(&book, 25, "uci.txt");
-    book.status = BOOK_ENDED;
 
     Board board;
     Board *p_board = &board;
