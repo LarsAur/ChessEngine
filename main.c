@@ -43,7 +43,7 @@ int main(void)
     {
         printf("Move number: %d\n", p_board->fullMoves);
 
-        m_playComputerTurn(p_board, &book, 5);
+        m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 

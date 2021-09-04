@@ -200,7 +200,10 @@ void advanceInBook(Book *book, Move move)
     // Loop through all the possible moves and check if it matches any of the possible moves
     for (uint8_t i = 0; i < book->currentNode->nNodes; i++)
     {
-        if(!memcmp(&move, &book->currentNode->moves[i], sizeof(Move)))
+        if(move.from == book->currentNode->moves[i].from
+            && move.to == book->currentNode->moves[i].to
+            && move.promotion == book->currentNode->moves[i].promotion
+        )
         {
             uint64_t nextNodeIndex = book->currentNode->nodeIndices[i];
             book->currentNode = &book->nodes[nextNodeIndex];
