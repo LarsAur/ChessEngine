@@ -50,7 +50,7 @@ int main(void)
     printBoard(p_board);
     for (uint8_t i = 0; i < 100; i++)
     {
-        m_playComputerTurn(p_board, &book, 7);
+        m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -58,7 +58,7 @@ int main(void)
         if (boardStatus)
             break;
 
-        m_playComputerTurn(p_board, &book, 7);
+        m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
