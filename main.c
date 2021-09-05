@@ -50,7 +50,7 @@ int main(void)
     printBoard(p_board);
     for (uint8_t i = 0; i < 100; i++)
     {
-        m_playComputerTurn(p_board, &book, 6);
+        m_playComputerTurn(p_board, &book, 7);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -58,8 +58,8 @@ int main(void)
         if (boardStatus)
             break;
 
-        //m_playComputerTurn(p_board, &book, 4);
-        m_playUserTurn(p_board, &book);
+        m_playComputerTurn(p_board, &book, 7);
+        //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
         boardStatus = isCheckmate(p_board);
@@ -92,6 +92,9 @@ int main(void)
 
 void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
 {
+    static clock_t totalTime;
+    static uint16_t numComputerMoves;
+
     clock_t start = clock(), diff;
 
     Move bestMove;
@@ -105,8 +108,12 @@ void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
     }
 
     diff = clock() - start;
+    totalTime += diff;
+    numComputerMoves++;
     int msec = diff * 1000 / CLOCKS_PER_SEC;
+    int totalMS = totalTime * 1000 / (CLOCKS_PER_SEC * numComputerMoves);
     printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
+    printf("Average time: %d sec, %d ms\n", totalMS / 1000, totalMS % 1000);
     performMove(&bestMove, p_board);
     printBoard(p_board);
 }
