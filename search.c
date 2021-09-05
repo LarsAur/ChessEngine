@@ -249,5 +249,5 @@ uint16_t m_movePriority(Move *p_move, Board *p_board)
 
     // 10 is just chosen to make the focus on what is captured and not what is capturing it
     // Negative because we want the high priorities first
-    return -(captureValue * 20 - capturingValue);
+    return -(captureValue * 20 + capturingValue);
 }
