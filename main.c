@@ -30,10 +30,11 @@ int main(void)
 
     Book book;
 
-    printf("Generating book...");
+    printf("Generating book...\n");
     clock_t start = clock(), diff;
 
-    generateBook(&book, 25, "uci.txt");
+    //generateBook(&book, 25, "uci.txt");
+    book.status = BOOK_ENDED;
 
     diff = clock() - start;
     int msec = diff * 1000 / CLOCKS_PER_SEC;

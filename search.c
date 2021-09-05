@@ -30,7 +30,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
     transpositionHits = 0;
     if(!p_tt) p_tt = createHashmap(1 << 20);
     ArrayList *p_legalMoves = getLegalMoves(p_board);
-    //sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board, m_movePriority);
 
     Move bestMove;
 
@@ -118,7 +118,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*-m_alphaBetaCaptures(p_board, -beta, -alpha);*/
     }
 
-    //sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board, m_movePriority);
     uint8_t wasCut = 0;
     int64_t value;
     if (maximizer)
@@ -185,7 +185,7 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     }
 
     filterNonCaptureMoves(p_legalMoves);
-    //sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board, m_movePriority);
 
     for(uint16_t i = 0; i < p_legalMoves->elements; i++)
     {
@@ -238,5 +238,5 @@ uint16_t m_movePriority(Move *p_move, Board *p_board)
 
     // 10 is just chosen to make the focus on what is captured and not what is capturing it
     // Negative because we want the high priorities first
-    return -(captureValue * 20 - capturingValue);
+    return -(captureValue * 20 + capturingValue);
 }

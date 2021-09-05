@@ -3,31 +3,31 @@
 
 #include "sorting.h"
 
-uint16_t m_partition(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
-void m_quickSort(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
+int16_t m_partition(Move arr[], int16_t low, int16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
+void m_quickSort(Move arr[], int16_t low, int16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
 
 void sort(ArrayList *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
     m_quickSort(p_list->array, 0, p_list->elements - 1, p_board, orderEval);
 }
 
-void m_quickSort(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void m_quickSort(Move arr[], int16_t low, int16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
     if(low < high)
     {
-        uint16_t pivotIndex = m_partition(arr, low, high, p_board, orderEval);
+        int16_t pivotIndex = m_partition(arr, low, high, p_board, orderEval);
 
         m_quickSort(arr, low, pivotIndex - 1, p_board, orderEval);
-        m_quickSort(arr, pivotIndex, high, p_board, orderEval);
+        m_quickSort(arr, pivotIndex + 1, high, p_board, orderEval);
     }
 }
 
-uint16_t  m_partition(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+int16_t m_partition(Move arr[], int16_t low, int16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
-    uint16_t pivot = orderEval(&arr[high], p_board);
-    uint16_t i = low - 1;
+    int16_t pivot = orderEval(&arr[high], p_board);
+    int16_t i = low - 1;
 
-    for(uint16_t j = low; j < high; j++)
+    for(int16_t j = low; j <= high - 1; j++)
     {
         if(orderEval(&arr[j], p_board) < pivot)
         {
