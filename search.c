@@ -29,26 +29,25 @@ Move findBestMove(Board *p_board, uint8_t depth)
     leafNodesEvaluated = 0;
     transpositionHits = 0;
     if(!p_tt) p_tt = createHashmap(1 << 20);
-    List *p_legalMoves = getLegalMoves(p_board);
-    sort(p_legalMoves, p_board, m_movePriority);
-    Node *p_moveNode = p_legalMoves->p_head;
+    ArrayList *p_legalMoves = getLegalMoves(p_board);
+    //sort(p_legalMoves, p_board, m_movePriority);
 
     Move bestMove;
 
     int64_t alpha = -INF;
     int64_t beta = INF;
     int64_t value = -INF;
-    for (uint8_t i = 0; i < p_legalMoves->length; i++)
+    for (uint8_t i = 0; i < p_legalMoves->elements; i++)
     {
-        performMove(p_moveNode->p_move, p_board);
+        performMove(&p_legalMoves->array[i], p_board);
         int64_t tmpValue = m_alphabeta(p_board, depth - 1, alpha, beta, 0);
-        undoMove(p_moveNode->p_move, p_board);
+        undoMove(&p_legalMoves->array[i], p_board);
 
         // select max and set new best move
         if (tmpValue > value)
         {
             value = tmpValue;
-            bestMove = *(p_moveNode->p_move);
+            bestMove = p_legalMoves->array[i];
         }
 
         alpha = fmaxl(alpha, value);
@@ -57,8 +56,6 @@ Move findBestMove(Board *p_board, uint8_t depth)
             appendToHashmap(p_tt, p_board, beta, depth, LOWER_BOUND);
             break;
         }
-
-        p_moveNode = p_moveNode->p_next;
     }
 
     freeMoveList(p_legalMoves);
@@ -95,10 +92,10 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return 0;
     }
 
-    List *p_legalMoves = getLegalMoves(p_board);
+    ArrayList *p_legalMoves = getLegalMoves(p_board);
 
     // If the depth is reach or there are no legal moves (checkmate or stalemate)
-    if (p_legalMoves->length == 0)
+    if (p_legalMoves->elements == 0)
     {
         leafNodesEvaluated++;
         freeMoveList(p_legalMoves);
@@ -121,18 +118,17 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*-m_alphaBetaCaptures(p_board, -beta, -alpha);*/
     }
 
-    sort(p_legalMoves, p_board, m_movePriority);
+    //sort(p_legalMoves, p_board, m_movePriority);
     uint8_t wasCut = 0;
     int64_t value;
-    Node *p_moveNode = p_legalMoves->p_head;
     if (maximizer)
     {
         value = -INF;
-        for (uint8_t i = 0; i < p_legalMoves->length; i++)
+        for (uint8_t i = 0; i < p_legalMoves->elements; i++)
         {
-            performMove(p_moveNode->p_move, p_board);
+            performMove(&p_legalMoves->array[i], p_board);
             value = fmaxl(value, m_alphabeta(p_board, depth - 1, alpha, beta, 0));
-            undoMove(p_moveNode->p_move, p_board);
+            undoMove(&p_legalMoves->array[i], p_board);
 
             alpha = fmaxl(alpha, value);
             if (alpha >= beta)
@@ -141,18 +137,16 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
                 wasCut = 1;
                 break;
             }
-
-            p_moveNode = p_moveNode->p_next;
         }
     }
     else
     {
         value = INF;
-        for (uint8_t i = 0; i < p_legalMoves->length; i++)
+        for (uint8_t i = 0; i < p_legalMoves->elements; i++)
         {
-            performMove(p_moveNode->p_move, p_board);
+            performMove(&p_legalMoves->array[i], p_board);
             value = fminl(value, m_alphabeta(p_board, depth - 1, alpha, beta, 1));
-            undoMove(p_moveNode->p_move, p_board);
+            undoMove(&p_legalMoves->array[i], p_board);
 
             beta = fminl(beta, value);
             if (beta <= alpha)
@@ -161,8 +155,6 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
                 wasCut = 1;
                 break;
             }
-
-            p_moveNode = p_moveNode->p_next;
         }
     }
 
@@ -179,8 +171,8 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
 {
     // Get the evaluation of the board, to compair the position
     // without captures to the positions to with captures
-    List *p_legalMoves = getLegalMoves(p_board);
-    int64_t eval = evaluateBoard(p_board, p_legalMoves->length ? LEGAL_MOVES_EXIST : NO_LEGAL_MOVES, color);
+    ArrayList *p_legalMoves = getLegalMoves(p_board);
+    int64_t eval = evaluateBoard(p_board, p_legalMoves->elements ? LEGAL_MOVES_EXIST : NO_LEGAL_MOVES, color);
 
     if (eval >= beta)
     {
@@ -193,14 +185,13 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     }
 
     filterNonCaptureMoves(p_legalMoves);
-    sort(p_legalMoves, p_board, m_movePriority);
+    //sort(p_legalMoves, p_board, m_movePriority);
 
-    Node *p_node = p_legalMoves->p_head;
-    while (p_node != NULL)
+    for(uint16_t i = 0; i < p_legalMoves->elements; i++)
     {
-        performMove(p_node->p_move, p_board);
+        performMove(&p_legalMoves->array[i], p_board);
         eval = m_alphaBetaCaptures(p_board, -beta, -alpha);
-        undoMove(p_node->p_move, p_board);
+        undoMove(&p_legalMoves->array[i], p_board);
 
         if (eval >= beta)
         {
@@ -211,8 +202,6 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
         {
             alpha = eval;
         }
-
-        p_node = p_node->p_next;
     }
 
     freeMoveList(p_legalMoves);

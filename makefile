@@ -1,5 +1,5 @@
-main: main.c fen.c utils.c moveHandler.c test.c search.c eval.c sorting.c hashing.c book.c
-	gcc -O3 -o chess.out -Wall main.c fen.c utils.c moveHandler.c test.c search.c eval.c sorting.c hashing.c book.c -lm
+main: main.c fen.c utils.c moveHandler.c search.c eval.c sorting.c hashing.c book.c
+	gcc -O0 -o chess.out -Wall main.c fen.c utils.c moveHandler.c search.c eval.c sorting.c hashing.c book.c -lm -g
 
 .PHONY: run
 run: 

@@ -3,81 +3,43 @@
 
 #include "sorting.h"
 
-void m_mergeSort(Node **headRef, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
-Node *m_sortedMerge(Node *a, Node *b, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
-void m_split(Node *src, Node **frontRef, Node **backRef);
+uint16_t m_partition(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
+void m_quickSort(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
 
-void sort(List *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void sort(ArrayList *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
-    m_mergeSort(&p_list->p_head, p_board, orderEval);
+    m_quickSort(p_list->array, 0, p_list->elements - 1, p_board, orderEval);
 }
 
-void m_mergeSort(Node **headRef, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void m_quickSort(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
-    Node *p_head = *headRef;
-    Node *a;
-    Node *b;
-
-    // One element and an empty list can only have one permutation
-    if ((p_head == NULL) || (p_head->p_next == NULL))
+    if(low < high)
     {
-        return;
+        uint16_t pivotIndex = m_partition(arr, low, high, p_board, orderEval);
+
+        m_quickSort(arr, low, pivotIndex - 1, p_board, orderEval);
+        m_quickSort(arr, pivotIndex, high, p_board, orderEval);
     }
-
-    m_split(p_head, &a, &b);
-
-    m_mergeSort(&a, p_board, orderEval);
-    m_mergeSort(&b, p_board, orderEval);
-
-    *headRef = m_sortedMerge(a, b, p_board, orderEval);
 }
 
-Node *m_sortedMerge(Node *a, Node *b, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+uint16_t  m_partition(Move arr[], uint16_t low, uint16_t high, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
 {
-    Node *result = NULL;
+    uint16_t pivot = orderEval(&arr[high], p_board);
+    uint16_t i = low - 1;
 
-    /* Base cases */
-    if (a == NULL)
-        return (b);
-    else if (b == NULL)
-        return (a);
-
-    /* Pick either a or b, and recur */
-    if (orderEval(a->p_move, p_board) <= orderEval(b->p_move, p_board))
+    for(uint16_t j = low; j < high; j++)
     {
-        result = a;
-        result->p_next = m_sortedMerge(a->p_next, b, p_board, orderEval);
-    }
-    else
-    {
-        result = b;
-        result->p_next = m_sortedMerge(a, b->p_next, p_board, orderEval);
-    }
-    
-    return result;
-}
-
-void m_split(Node *src, Node **frontRef, Node **backRef)
-{
-    Node *fast;
-    Node *slow;
-    slow = src;
-    fast = src->p_next;
-
-    // Advance 'fast' two nodes, and advance 'slow' one node
-    while (fast != NULL)
-    {
-        fast = fast->p_next;
-        if (fast != NULL)
+        if(orderEval(&arr[j], p_board) < pivot)
         {
-            slow = slow->p_next;
-            fast = fast->p_next;
+            i++;
+            Move tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
         }
     }
 
-    /* 'slow' is before the midpoint in the list, so split it in two 
-    at that point. */
-    *frontRef = src;
-    *backRef = slow->p_next;
-    slow->p_next = NULL;
+    Move tmp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = tmp;
+    return i + 1;
 }

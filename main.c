@@ -11,7 +11,7 @@
 #include "eval.h"
 #include "book.h"
 
-#include "test.h"
+// #include "test.h"
 
 void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
 void m_playUserTurn(Board *p_board, Book *book);
@@ -29,7 +29,15 @@ int main(void)
     //__test__evaluation();
 
     Book book;
+
+    printf("Generating book...");
+    clock_t start = clock(), diff;
+
     generateBook(&book, 25, "uci.txt");
+
+    diff = clock() - start;
+    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Book generation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
 
     Board board;
     Board *p_board = &board;
@@ -41,8 +49,6 @@ int main(void)
     printBoard(p_board);
     for (uint8_t i = 0; i < 100; i++)
     {
-        printf("Move number: %d\n", p_board->fullMoves);
-
         m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");

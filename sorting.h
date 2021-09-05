@@ -5,6 +5,6 @@
 #include "moveHandler.h"
 #include "main.h"
 
-void sort(List *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
+void sort(ArrayList *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
 
 #endif

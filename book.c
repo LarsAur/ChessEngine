@@ -44,19 +44,16 @@ Move m_getMoveFromUCI(char *uci, Board *p_board)
     }
 
     // Itterate through all legal moves and return the one matching the from, to and promotion
-    List *legalMoves = getLegalMoves(p_board);
-    Node *p_node = legalMoves->p_head;
-    while (p_node)
+    ArrayList *legalMoves = getLegalMoves(p_board);
+    for(uint16_t i = 0; i < legalMoves->elements; i++)
     {
-        Move *p_move = p_node->p_move;
-        if (p_move->to == to && p_move->from == from && p_move->promotion == promotion)
+        Move move = legalMoves->array[i];
+        
+        if (move.to == to && move.from == from && move.promotion == promotion)
         {
-            Move move = *p_move;
             freeMoveList(legalMoves);
             return move;
         }
-
-        p_node = p_node->p_next;
     }
 
     // If there is no matching move, an error has occured
