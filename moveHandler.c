@@ -857,17 +857,7 @@ void m_addMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t captur
     p_list->elements++;
 }
 
-uint8_t m_oppositeColor(uint8_t color)
+inline uint8_t m_oppositeColor(uint8_t color)
 {
-    if (color == WHITE)
-    {
-        return BLACK;
-    }
-    else if (color == BLACK)
-    {
-        return WHITE;
-    }
-
-    printf("Cannot find the opposite color of %d", color);
-    return EMPTY;
+    return color ^ COLOR_MASK;
 }

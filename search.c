@@ -16,7 +16,6 @@
 
 int64_t m_alphabeta(Board *p_board, uint8_t depth, evaluation_t alpha, evaluation_t beta, uint8_t maximizer);
 int64_t m_alphaBetaCaptures(Board *p_board, evaluation_t alpha, evaluation_t beta);
-uint16_t m_movePriority(Move *p_move, Board *p_board);
 uint8_t m_numBoardRepeates(Board *p_board);
 
 Hashmap *p_tt = NULL;
@@ -34,7 +33,7 @@ Move findBestMove(Board *p_board, uint8_t depth)
     transpositionHits = 0;
     if(!p_tt) p_tt = createHashmap(1 << 20);
     ArrayList *p_legalMoves = getLegalMoves(p_board);
-    sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board);
 
     Move bestMove;
 
@@ -130,7 +129,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return evaluateBoard(p_board, LEGAL_MOVES_EXIST, color); /*-m_alphaBetaCaptures(p_board, -beta, -alpha);*/
     }
 
-    sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board);
     uint8_t wasCut = 0;
     int64_t value;
     if (maximizer)
@@ -197,7 +196,7 @@ int64_t m_alphaBetaCaptures(Board *p_board, int64_t alpha, int64_t beta)
     }
 
     filterNonCaptureMoves(p_legalMoves);
-    sort(p_legalMoves, p_board, m_movePriority);
+    sort(p_legalMoves, p_board);
 
     for(uint16_t i = 0; i < p_legalMoves->elements; i++)
     {
@@ -230,25 +229,4 @@ uint8_t m_numBoardRepeates(Board *p_board)
         repeats += p_board->gameHashHistory[i] == p_board->hash;
     }
     return repeats;
-}
-
-uint16_t piecePriority[7] =
-{
-    EMPTY,
-    PAWN_VALUE,
-    ROOK_VALUE,
-    KNIGHT_VALUE,
-    BISHOP_VALUE,
-    QUEEN_VALUE,
-    KING_VALUE,
-};
-
-uint16_t m_movePriority(Move *p_move, Board *p_board)
-{
-    uint16_t captureValue = piecePriority[p_move->capture & TYPE_MASK];
-    uint16_t capturingValue = piecePriority[p_board->board[p_move->from] & TYPE_MASK];
-
-    // 10 is just chosen to make the focus on what is captured and not what is capturing it
-    // Negative because we want the high priorities first
-    return -(captureValue * 20 + capturingValue);
 }

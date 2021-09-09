@@ -33,7 +33,7 @@ int main(void)
     printf("Generating book...\n");
     clock_t start = clock(), diff;
 
-    //generateBook(&book, 25, "uci.txt");
+    generateBook(&book, 0, "uci.txt");
     book.status = BOOK_ENDED;
 
     diff = clock() - start;
@@ -48,8 +48,9 @@ int main(void)
     int8_t boardStatus;
 
     printBoard(p_board);
-    for (uint8_t i = 0; i < 100; i++)
+    for (uint8_t i = 0; i < 20; i++)
     {
+        printf("Move number: %d\n", i + 1);
         m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
@@ -85,6 +86,8 @@ int main(void)
     }
 
     freeBook(&book);
+    extern Hashmap *p_tt;
+    freehashmap(p_tt);
 
     printf("Exit success\n");
     return 0;
