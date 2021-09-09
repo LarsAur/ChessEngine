@@ -10,11 +10,33 @@
 #include "hashing.h"
 #include "eval.h"
 #include "book.h"
+#include "sorting.h"
 
-// #include "test.h"
+#include "test.h"
 
 void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
 void m_playUserTurn(Board *p_board, Book *book);
+
+uint16_t pPriority[7] =
+    {
+        EMPTY,
+        PAWN_VALUE,
+        ROOK_VALUE,
+        KNIGHT_VALUE,
+        BISHOP_VALUE,
+        QUEEN_VALUE,
+        KING_VALUE,
+};
+
+int16_t mPriority(Move *p_move, Board *p_board)
+{
+    uint16_t captureValue = pPriority[p_board->board[p_move->to] & TYPE_MASK];
+    uint16_t capturingValue = pPriority[p_board->board[p_move->from] & TYPE_MASK];
+
+    // 20 is just chosen to make the focus on what is captured and not what is capturing it
+    // Negative because we want the high priorities first
+    return -(captureValue * 20 + capturingValue);
+}
 
 int main(void)
 {
@@ -33,8 +55,7 @@ int main(void)
     printf("Generating book...\n");
     clock_t start = clock(), diff;
 
-    generateBook(&book, 0, "uci.txt");
-    book.status = BOOK_ENDED;
+    generateBook(&book, 25, "uci.txt");
 
     diff = clock() - start;
     int msec = diff * 1000 / CLOCKS_PER_SEC;
@@ -67,6 +88,9 @@ int main(void)
         if (boardStatus)
             break;
     }
+
+    extern uint64_t calls;
+    printf("Calls to getLegalMoves %ld", calls);
 
     if (boardStatus == 1)
     {

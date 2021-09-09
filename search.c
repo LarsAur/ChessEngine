@@ -82,7 +82,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
 {
     if(m_numBoardRepeates(p_board) == 2)
     {
-        return 0;
+        return STALEMATE;
     }
 
     clock_t start = clock(), diff;
