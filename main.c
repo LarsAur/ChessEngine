@@ -17,27 +17,6 @@
 void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
 void m_playUserTurn(Board *p_board, Book *book);
 
-uint16_t pPriority[7] =
-    {
-        EMPTY,
-        PAWN_VALUE,
-        ROOK_VALUE,
-        KNIGHT_VALUE,
-        BISHOP_VALUE,
-        QUEEN_VALUE,
-        KING_VALUE,
-};
-
-int16_t mPriority(Move *p_move, Board *p_board)
-{
-    uint16_t captureValue = pPriority[p_board->board[p_move->to] & TYPE_MASK];
-    uint16_t capturingValue = pPriority[p_board->board[p_move->from] & TYPE_MASK];
-
-    // 20 is just chosen to make the focus on what is captured and not what is capturing it
-    // Negative because we want the high priorities first
-    return -(captureValue * 20 + capturingValue);
-}
-
 int main(void)
 {
     //__test__FEN();
@@ -72,7 +51,7 @@ int main(void)
     for (uint8_t i = 0; i < 20; i++)
     {
         printf("Move number: %d\n", i + 1);
-        m_playComputerTurn(p_board, &book, 6);
+        m_playComputerTurn(p_board, &book, 7);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -80,7 +59,7 @@ int main(void)
         if (boardStatus)
             break;
 
-        m_playComputerTurn(p_board, &book, 6);
+        m_playComputerTurn(p_board, &book, 7);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
