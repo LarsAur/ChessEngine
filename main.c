@@ -35,6 +35,7 @@ int main(void)
     clock_t start = clock(), diff;
 
     generateBook(&book, 25, "uci.txt");
+    book.status = BOOK_ENDED;
 
     diff = clock() - start;
     int msec = diff * 1000 / CLOCKS_PER_SEC;
@@ -42,7 +43,7 @@ int main(void)
 
     Board board;
     Board *p_board = &board;
-    createBoardFormFEN(INITIAL_BOARD, p_board);
+    createBoardFormFEN("rnb2b1r/ppk2ppp/8/2p2qB1/1P4n1/2PB1N2/P3Q1P1/4RKR1 b - - 0 1", p_board);
     initEvalTables();
 
     int8_t boardStatus;

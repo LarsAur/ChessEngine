@@ -47,17 +47,16 @@ void freehashmap(Hashmap *p_hashmap)
 }
 
 // Adds the the board with the evaluation to the hashmap
-void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, EvalType evalType)
+void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, uint8_t repeats, EvalType evalType)
 {
     hash_t hash = p_board->hash;
     uint64_t bucketId = hash % p_hashmap->numBuckets; // Fit hash into the number of buckets
-
 
     // Loop through the bucket and check if there are any matching hashes with lower depths and replace them
     Bucket *p_bucket = p_hashmap->buckets[bucketId];
     while (p_bucket)
     {
-        if(p_bucket->hash == hash && p_bucket->depth < depth && p_bucket->evalType == evalType)
+        if(p_bucket->hash == hash && p_bucket->depth < depth && p_bucket->evalType == evalType && p_bucket->repeats == repeats)
         {
             p_bucket->depth = depth;
             p_bucket->evalScore = eval;
@@ -73,6 +72,7 @@ void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint
     p_newBucket->evalScore = eval;
     p_newBucket->depth = depth;
     p_newBucket->evalType = evalType;
+    p_newBucket->repeats = repeats;
 
     // Put the new bucket element at the front of the linked list
     p_newBucket->p_next = p_hashmap->buckets[bucketId];
@@ -102,7 +102,7 @@ uint8_t existsInHashmap(Hashmap *p_hashmap, Board *p_board)
 }
 
 // Gets the evaluation of the board, this function assums that the board is in the hashmap
-evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, int64_t alpha, int64_t beta)
+evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, uint8_t repeats, int64_t alpha, int64_t beta)
 {
     hash_t hash = p_board->hash;
     uint64_t bucketId = hash % p_hashmap->numBuckets;
@@ -112,7 +112,7 @@ evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, in
     {
         if (hash == bucket->hash)
         {
-            if (bucket->depth >= depth)
+            if (bucket->depth >= depth && bucket->repeats == repeats)
             {
                 // The board was found
                 if (bucket->evalType == EXACT)

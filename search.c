@@ -53,7 +53,8 @@ Move findBestMove(Board *p_board, uint8_t depth)
         alpha = fmaxl(alpha, value);
         if (alpha >= beta)
         {
-            appendToHashmap(p_tt, p_board, beta, depth, LOWER_BOUND);
+            uint8_t repeats = m_numBoardRepeates(p_board);
+            appendToHashmap(p_tt, p_board, beta, depth, repeats, LOWER_BOUND);
             break;
         }
     }
@@ -74,13 +75,13 @@ Move findBestMove(Board *p_board, uint8_t depth)
 
 int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, uint8_t maximizer)
 {
-    if(m_numBoardRepeates(p_board) == 2)
+    uint8_t repeats = m_numBoardRepeates(p_board);
+    if(repeats == 2)
     {
         return STALEMATE;
     }
 
-    int64_t transpositionLookup = getEvaluation(p_tt, p_board, depth, alpha, beta);
-
+    int64_t transpositionLookup = getEvaluation(p_tt, p_board, depth, repeats, alpha, beta);
     if (transpositionLookup != EVAL_LOOKUP_FAILED)
     {
         transpositionHits++;
@@ -134,7 +135,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
             alpha = fmaxl(alpha, value);
             if (alpha >= beta)
             {
-                appendToHashmap(p_tt, p_board, beta, depth, LOWER_BOUND);
+                appendToHashmap(p_tt, p_board, beta, depth, repeats, LOWER_BOUND);
                 wasCut = 1;
                 break;
             }
@@ -152,7 +153,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
             beta = fminl(beta, value);
             if (beta <= alpha)
             {
-                appendToHashmap(p_tt, p_board, alpha, depth, UPPER_BOUND);
+                appendToHashmap(p_tt, p_board, alpha, depth, repeats, UPPER_BOUND);
                 wasCut = 1;
                 break;
             }
@@ -161,7 +162,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
 
     if (!wasCut)
     {
-        appendToHashmap(p_tt, p_board, value, depth, EXACT);
+        appendToHashmap(p_tt, p_board, value, depth, repeats, EXACT);
     }
 
     freeMoveList(p_legalMoves);

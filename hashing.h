@@ -30,12 +30,13 @@ typedef struct bucket_t
     evaluation_t evalScore;
     EvalType evalType;
     uint8_t depth;
+    uint8_t repeats;
     struct bucket_t *p_next;
 } Bucket;
 
-void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, EvalType evalType);
+void appendToHashmap(Hashmap *p_hashmap, Board *p_board, evaluation_t eval, uint8_t depth, uint8_t repeats, EvalType evalType);
 uint8_t existsInHashmap(Hashmap *p_hashmap, Board *p_board);
-evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, int64_t alpha, int64_t beta);
+evaluation_t getEvaluation(Hashmap *p_hashmap, Board *p_board, uint8_t depth, uint8_t repeats, int64_t alpha, int64_t beta);
 
 Hashmap *createHashmap(uint64_t numBuckets);
 void freehashmap(Hashmap *hashmap);
