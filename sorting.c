@@ -1,83 +1,70 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "eval.h"
 #include "sorting.h"
 
-void m_mergeSort(Node **headRef, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
-Node *m_sortedMerge(Node *a, Node *b, Board *p_board, uint16_t (*orderEval)(Move *, Board *));
-void m_split(Node *src, Node **frontRef, Node **backRef);
+int16_t m_partition(Move arr[], int16_t low, int16_t high, Board *p_board);
+void m_quickSort(Move arr[], int16_t low, int16_t high, Board *p_board);
+int16_t m_movePriority(Move *p_move, Board *p_board);
 
-void sort(List *p_list, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void sort(ArrayList *p_list, Board *p_board)
 {
-    m_mergeSort(&p_list->p_head, p_board, orderEval);
+    m_quickSort(p_list->array, 0, p_list->elements - 1, p_board);
 }
 
-void m_mergeSort(Node **headRef, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void m_swap(Move *a, Move *b)
 {
-    Node *p_head = *headRef;
-    Node *a;
-    Node *b;
-
-    // One element and an empty list can only have one permutation
-    if ((p_head == NULL) || (p_head->p_next == NULL))
-    {
-        return;
-    }
-
-    m_split(p_head, &a, &b);
-
-    m_mergeSort(&a, p_board, orderEval);
-    m_mergeSort(&b, p_board, orderEval);
-
-    *headRef = m_sortedMerge(a, b, p_board, orderEval);
+    Move t = *a;
+    *a = *b;
+    *b = t;
 }
 
-Node *m_sortedMerge(Node *a, Node *b, Board *p_board, uint16_t (*orderEval)(Move *, Board *))
+void m_quickSort(Move arr[], int16_t low, int16_t high, Board *p_board)
 {
-    Node *result = NULL;
-
-    /* Base cases */
-    if (a == NULL)
-        return (b);
-    else if (b == NULL)
-        return (a);
-
-    /* Pick either a or b, and recur */
-    if (orderEval(a->p_move, p_board) <= orderEval(b->p_move, p_board))
+    if(low < high)
     {
-        result = a;
-        result->p_next = m_sortedMerge(a->p_next, b, p_board, orderEval);
+        int16_t pivotIndex = m_partition(arr, low, high, p_board);
+
+        m_quickSort(arr, low, pivotIndex - 1, p_board);
+        m_quickSort(arr, pivotIndex + 1, high, p_board);
     }
-    else
-    {
-        result = b;
-        result->p_next = m_sortedMerge(a, b->p_next, p_board, orderEval);
-    }
-    
-    return result;
 }
 
-void m_split(Node *src, Node **frontRef, Node **backRef)
+int16_t m_partition(Move arr[], int16_t low, int16_t high, Board *p_board)
 {
-    Node *fast;
-    Node *slow;
-    slow = src;
-    fast = src->p_next;
+    int16_t pivot = m_movePriority(&arr[high], p_board);
+    int16_t i = low - 1;
 
-    // Advance 'fast' two nodes, and advance 'slow' one node
-    while (fast != NULL)
+    for(int16_t j = low; j < high; j++)
     {
-        fast = fast->p_next;
-        if (fast != NULL)
+        if(m_movePriority(&arr[j], p_board) < pivot)
         {
-            slow = slow->p_next;
-            fast = fast->p_next;
+            i++;
+            m_swap(&arr[i], &arr[j]);
         }
     }
+    m_swap(&arr[i + 1], &arr[high]);
+    return i + 1;
+}
 
-    /* 'slow' is before the midpoint in the list, so split it in two 
-    at that point. */
-    *frontRef = src;
-    *backRef = slow->p_next;
-    slow->p_next = NULL;
+uint16_t piecePriority[7] =
+{
+    EMPTY,
+    PAWN_VALUE,
+    ROOK_VALUE,
+    KNIGHT_VALUE,
+    BISHOP_VALUE,
+    QUEEN_VALUE,
+    KING_VALUE,
+};
+
+int16_t m_movePriority(Move *p_move, Board *p_board)
+{
+    uint16_t captureValue = piecePriority[p_board->board[p_move->to] & TYPE_MASK];
+    uint16_t capturingValue = piecePriority[p_board->board[p_move->from] & TYPE_MASK];
+
+    // 20 is just chosen to make the focus on what is captured and not what is capturing it
+    // Negative because we want the high priorities first
+    return -(captureValue * 20 + capturingValue);
 }

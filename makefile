@@ -1,5 +1,5 @@
-main: main.c fen.c utils.c moveHandler.c test.c search.c eval.c sorting.c hashing.c book.c
-	gcc -O3 -o chess.out -Wall main.c fen.c utils.c moveHandler.c test.c search.c eval.c sorting.c hashing.c book.c -lm
+main: main.c fen.c utils.c moveHandler.c search.c eval.c sorting.c hashing.c book.c test.c
+	gcc -O3 -o chess.out -Wall main.c fen.c utils.c moveHandler.c search.c eval.c sorting.c hashing.c book.c test.c -lm
 
 .PHONY: run
 run: 
@@ -8,6 +8,11 @@ run:
 .PHONY: mem
 mem: 
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./chess.out
+
+.PHONY: calls
+calls:
+	valgrind --tool=callgrind ./chess.out
+
 .PHONY: clean
 clean:
 	rm ./chess.out
