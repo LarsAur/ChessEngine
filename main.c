@@ -48,10 +48,10 @@ int main(void)
     int8_t boardStatus;
 
     printBoard(p_board);
-    for (uint8_t i = 0; i < 20; i++)
+    for (uint8_t i = 0; i < 100; i++)
     {
         printf("Move number: %d\n", i + 1);
-        m_playComputerTurn(p_board, &book, 7);
+        m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -67,9 +67,6 @@ int main(void)
         if (boardStatus)
             break;
     }
-
-    extern uint64_t calls;
-    printf("Calls to getLegalMoves %ld", calls);
 
     if (boardStatus == 1)
     {
@@ -101,8 +98,6 @@ void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
     static clock_t totalTime;
     static uint16_t numComputerMoves;
 
-    clock_t start = clock(), diff;
-
     Move bestMove;
     if (book->status == BOOK_READY)
     {
@@ -110,16 +105,19 @@ void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
     }
     else
     {
+        clock_t start = clock(), diff;
+
         bestMove = findBestMove(p_board, ply);
+
+        diff = clock() - start;
+        totalTime += diff;
+        numComputerMoves++;
+        int msec = diff * 1000 / CLOCKS_PER_SEC;
+        int totalMS = totalTime * 1000 / (CLOCKS_PER_SEC * numComputerMoves);
+        printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
+        printf("Average time: %d sec, %d ms\n", totalMS / 1000, totalMS % 1000);
     }
 
-    diff = clock() - start;
-    totalTime += diff;
-    numComputerMoves++;
-    int msec = diff * 1000 / CLOCKS_PER_SEC;
-    int totalMS = totalTime * 1000 / (CLOCKS_PER_SEC * numComputerMoves);
-    printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
-    printf("Average time: %d sec, %d ms\n", totalMS / 1000, totalMS % 1000);
     performMove(&bestMove, p_board);
     printBoard(p_board);
 }

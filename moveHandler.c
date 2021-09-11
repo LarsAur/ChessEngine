@@ -23,11 +23,8 @@ void m_addSpecialMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t
 
 uint8_t m_oppositeColor(uint8_t color);
 
-uint64_t calls = 0;
-
 ArrayList *getLegalMoves(Board *p_board)
 {
-    calls++;
     ArrayList *p_list = getPseudoLegalMoves(p_board);
     m_filterCheckedMoves(p_list, p_board);
     return p_list;

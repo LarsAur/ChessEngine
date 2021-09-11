@@ -23,9 +23,6 @@ uint32_t leafNodesEvaluated = 0;
 uint32_t transpositionHits = 0;
 uint8_t color = 0; //Color of the player to find the best move for, this is set in findbestmove and passed to evaluation
 
-clock_t totalTime;
-uint64_t numLookups;
-
 Move findBestMove(Board *p_board, uint8_t depth)
 {
     color = p_board->turn;
@@ -72,9 +69,6 @@ Move findBestMove(Board *p_board, uint8_t depth)
     printf("Best move: ");
     printMove(&bestMove);
 
-    int totalMS = totalTime * 1000 / (CLOCKS_PER_SEC * numLookups);
-    printf("Average lookup time: %d sec, %d ms\n", totalMS / 1000, totalMS % 1000);
-
     return bestMove;
 }
 
@@ -85,11 +79,7 @@ int64_t m_alphabeta(Board *p_board, uint8_t depth, int64_t alpha, int64_t beta, 
         return STALEMATE;
     }
 
-    clock_t start = clock(), diff;
     int64_t transpositionLookup = getEvaluation(p_tt, p_board, depth, alpha, beta);
-    diff = clock() - start;
-    totalTime += diff;
-    numLookups++;
 
     if (transpositionLookup != EVAL_LOOKUP_FAILED)
     {
