@@ -10,25 +10,52 @@
 #include "hashing.h"
 #include "eval.h"
 #include "book.h"
+#include "sorting.h"
 
 #include "test.h"
 
-void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
-void m_playUserTurn(Board *p_board, Book *book);
+//void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply);
+//void m_playUserTurn(Board *p_board, Book *book);
 
-int main(void)
+/*int main(void)
 {
+    //__test__FEN();
+    //__test__pawnMovement();
+    //__test__slidingMovement();
+    //__test__kingMovement();
+    //__test__knightMovement();
+    //__test__moveTree();
+    //__test__hashmap();
+    //__test__checkmate();
+    //__test__evaluation();
+
+    Book book;
+
+    printf("Generating book...\n");
+    clock_t start = clock(), diff;
+
+    generateBook(&book, 25, "uci.txt");
+
+    diff = clock() - start;
+    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Book generation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
+
+    Board board;
+    Board *p_board = &board;
+    createBoardFormFEN(INITIAL_BOARD, p_board);
+    initEvalTables();
+
+    int8_t boardStatus;
 
     //createBoardFormFEN(INITIAL_BOARD, &board);
 
     //int8_t boardStatus = 0;
 
     //printBoard(p_board);
-    /*for (uint8_t i = 0; i < 100; i++)
+    for (uint8_t i = 0; i < 100; i++)
     {
-        printf("Move number: %d\n", p_board->fullMoves);
-
-        m_playComputerTurn(p_board, &book, 5);
+        printf("Move number: %d\n", i + 1);
+        m_playComputerTurn(p_board, &book, 6);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -36,8 +63,8 @@ int main(void)
         if (boardStatus)
             break;
 
-        //m_playComputerTurn(p_board, &book, 4);
-        m_playUserTurn(p_board, &book);
+        m_playComputerTurn(p_board, &book, 6);
+        //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
         boardStatus = isCheckmate(p_board);
@@ -62,15 +89,18 @@ int main(void)
         printf("Game terminated!");
     }
 
-    //freeBook(&book);
-    */
+    freeBook(&book);
+    extern Hashmap *p_tt;
+    freehashmap(p_tt);
+
     printf("Exit success\n");
     return 0;
 }
 
 void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
 {
-    clock_t start = clock(), diff;
+    static clock_t totalTime;
+    static uint16_t numComputerMoves;
 
     Move bestMove;
     if (book->status == BOOK_READY)
@@ -79,12 +109,19 @@ void m_playComputerTurn(Board *p_board, Book *book, uint8_t ply)
     }
     else
     {
+        clock_t start = clock(), diff;
+
         bestMove = findBestMove(p_board, ply);
+
+        diff = clock() - start;
+        totalTime += diff;
+        numComputerMoves++;
+        int msec = diff * 1000 / CLOCKS_PER_SEC;
+        int totalMS = totalTime * 1000 / (CLOCKS_PER_SEC * numComputerMoves);
+        printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
+        printf("Average time: %d sec, %d ms\n", totalMS / 1000, totalMS % 1000);
     }
 
-    diff = clock() - start;
-    int msec = diff * 1000 / CLOCKS_PER_SEC;
-    printf("Move calculation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
     performMove(&bestMove, p_board);
     printBoard(p_board);
 }
@@ -96,3 +133,4 @@ void m_playUserTurn(Board *p_board, Book *book)
     performMove(&selectedMove, p_board);
     printBoard(p_board);
 }
+*/

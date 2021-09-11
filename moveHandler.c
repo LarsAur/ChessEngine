@@ -7,37 +7,35 @@
 #include "utils.h"
 #include "hashing.h"
 
-void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addRookMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addBishopMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addQueenMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addKingMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addKnightMoves(List *p_list, Board *p_board, uint8_t square);
-void m_addDirectionalSlideMoves(List *p_list, Board *p_board, uint8_t square, int8_t dFile, int8_t dRank);
-void m_removeNodeFromList(List *p_list, Node *p_node);
+void m_addPawnMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addRookMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addBishopMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addQueenMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addKingMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addKnightMoves(ArrayList *p_list, Board *p_board, uint8_t square);
+void m_addDirectionalSlideMoves(ArrayList *p_list, Board *p_board, uint8_t square, int8_t dFile, int8_t dRank);
 
-void m_filterCheckedMoves(List *p_list, Board *p_board);
+void m_filterCheckedMoves(ArrayList *p_list, Board *p_board);
 uint8_t m_isSlidingChecked(Board *p_board, uint8_t kingRank, uint8_t kingFile, int8_t dfile, int8_t drank, uint8_t type, uint8_t oppositeColor);
 
-void m_addMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture);
-void m_addSpecialMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture, uint8_t castle, uint8_t promotion, uint8_t enpassant, uint8_t pawnDoubleMove);
-void m_addMovePtrToList(List *p_list, Move *p_move);
+void m_addMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t capture);
+void m_addSpecialMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t capture, uint8_t castle, uint8_t promotion, uint8_t enpassant, uint8_t pawnDoubleMove);
 
 uint8_t m_oppositeColor(uint8_t color);
 
-List *getLegalMoves(Board *p_board)
+ArrayList *getLegalMoves(Board *p_board)
 {
-    List *p_list = getPseudoLegalMoves(p_board);
+    ArrayList *p_list = getPseudoLegalMoves(p_board);
     m_filterCheckedMoves(p_list, p_board);
     return p_list;
 }
 
-List *getPseudoLegalMoves(Board *p_board)
+ArrayList *getPseudoLegalMoves(Board *p_board)
 {
-    List *p_list = malloc(sizeof(List));
-    p_list->length = 0;
-    p_list->p_tail = NULL;
-    p_list->p_head = NULL;
+    ArrayList *p_list = malloc(sizeof(ArrayList));
+    p_list->size = 16;
+    p_list->elements = 0;
+    p_list->array = malloc(sizeof(Move) * p_list->size);
 
     for (uint8_t square = 0; square < 64; square++)
     {
@@ -75,7 +73,7 @@ List *getPseudoLegalMoves(Board *p_board)
 }
 
 // Adds the moves which the pawn on the square can perform to the list
-void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addPawnMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     int8_t moveDirection;
     uint8_t initialRank;
@@ -195,7 +193,7 @@ void m_addPawnMoves(List *p_list, Board *p_board, uint8_t square)
 }
 
 // Add rook moves
-void m_addRookMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addRookMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     m_addDirectionalSlideMoves(p_list, p_board, square, 1, 0);
     m_addDirectionalSlideMoves(p_list, p_board, square, 0, 1);
@@ -204,7 +202,7 @@ void m_addRookMoves(List *p_list, Board *p_board, uint8_t square)
 }
 
 // Add bishop moves
-void m_addBishopMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addBishopMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     m_addDirectionalSlideMoves(p_list, p_board, square, 1, 1);
     m_addDirectionalSlideMoves(p_list, p_board, square, 1, -1);
@@ -213,13 +211,13 @@ void m_addBishopMoves(List *p_list, Board *p_board, uint8_t square)
 }
 
 // Add all queen moves by combining the moves of a bishop and rook
-void m_addQueenMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addQueenMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     m_addRookMoves(p_list, p_board, square);
     m_addBishopMoves(p_list, p_board, square);
 }
 
-void m_addKingMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addKingMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     // Basic movement
     int8_t currentRank = (square / 8);
@@ -276,7 +274,7 @@ void m_addKingMoves(List *p_list, Board *p_board, uint8_t square)
     }
 }
 
-void m_addKnightMoves(List *p_list, Board *p_board, uint8_t square)
+void m_addKnightMoves(ArrayList *p_list, Board *p_board, uint8_t square)
 {
     uint8_t currentRank = (square / 8);
     uint8_t currentFile = (square % 8);
@@ -307,7 +305,7 @@ void m_addKnightMoves(List *p_list, Board *p_board, uint8_t square)
 }
 
 // Adds all move in a direction until it hits a piece, if the piece is of the opposite color that move is included
-void m_addDirectionalSlideMoves(List *p_list, Board *p_board, uint8_t square, int8_t dFile, int8_t dRank)
+void m_addDirectionalSlideMoves(ArrayList *p_list, Board *p_board, uint8_t square, int8_t dFile, int8_t dRank)
 {
     uint8_t currentRank = (square / 8);
     uint8_t currentFile = (square % 8);
@@ -340,43 +338,43 @@ void m_addDirectionalSlideMoves(List *p_list, Board *p_board, uint8_t square, in
     }
 }
 
-void m_filterCheckedMoves(List *p_list, Board *p_board)
+void m_filterCheckedMoves(ArrayList *p_list, Board *p_board)
 {
     Board tmpBoard;
 
-    Node *p_node = p_list->p_head;
-
-    while (p_node != NULL)
+    uint16_t writeIndex = 0;
+    for (uint16_t readIndex = 0; readIndex < p_list->elements; readIndex++)
     {
         memcpy(&tmpBoard, p_board, sizeof(Board));
-        performMove(p_node->p_move, &tmpBoard);
-
-        Node *tmp = p_node->p_next;
+        performMove(&p_list->array[readIndex], &tmpBoard);
 
         if (isChecked(&tmpBoard, p_board->turn))
         {
-            m_removeNodeFromList(p_list, p_node);
+            // Remove the move from the list, by not including it
+            continue;
         }
         // Check if the in-between square is targetet by the opponent and the king square
-        else if (p_node->p_move->castle)
+        else if (p_list->array[readIndex].castle)
         {
-            memcpy(&tmpBoard, p_board, sizeof(Board));
-
             // Check if king is in check before casteling (not after as above)
-            if (isChecked(&tmpBoard, p_board->turn))
+            if (isChecked(p_board, p_board->turn))
             {
-                m_removeNodeFromList(p_list, p_node);
+                // Remove the move from the list, by not including it
+                continue;
             }
             else
             {
-                // Switching the turn back
+                memcpy(&tmpBoard, p_board, sizeof(Board));
+                // Switching the turn back TODO remove ????
                 tmpBoard.turn = m_oppositeColor(tmpBoard.turn);
+
                 // Check if king is checked in the in-between squares
                 Move middleMove;
-                middleMove = *(p_node->p_move);
+                middleMove = p_list->array[readIndex];
                 middleMove.castle = 0;
+
                 // Castle is kingside
-                if (p_node->p_move->to > p_node->p_move->from)
+                if (middleMove.to > middleMove.from)
                 {
                     middleMove.to = middleMove.to - 1;
                 }
@@ -390,29 +388,34 @@ void m_filterCheckedMoves(List *p_list, Board *p_board)
 
                 if (isChecked(&tmpBoard, p_board->turn))
                 {
-                    m_removeNodeFromList(p_list, p_node);
+                    // Remove the move from the list, by not including it
+                    continue;
                 }
             }
         }
 
-        p_node = tmp;
+        p_list->array[writeIndex] = p_list->array[readIndex];
+        writeIndex++;
     }
+
+    p_list->elements = writeIndex;
 }
 
 // Removes and frees all moves which are not captures from the list
-void filterNonCaptureMoves(List *p_legalMovesList)
+void filterNonCaptureMoves(ArrayList *p_legalMovesList)
 {
-    Node *p_node = p_legalMovesList->p_head;
-    while (p_node != NULL)
+    uint16_t writeIndex = 0;
+    for (uint16_t readIndex = 0; readIndex < p_legalMovesList->elements; readIndex++)
     {
-        Node *tmp = p_node->p_next;
-        if (p_node->p_move->capture == EMPTY)
+        if (p_legalMovesList->array[readIndex].capture != EMPTY)
         {
-            m_removeNodeFromList(p_legalMovesList, p_node);
+            p_legalMovesList->array[writeIndex] = p_legalMovesList->array[readIndex];
+            writeIndex++;
         }
-
-        p_node = tmp;
     }
+
+    // Set the new number of elements
+    p_legalMovesList->elements = writeIndex;
 }
 
 // This is an "expensive" function checking if the current player has no moves and if it is checkmate/stalemate
@@ -421,7 +424,7 @@ void filterNonCaptureMoves(List *p_legalMovesList)
 int8_t isCheckmate(Board *p_board)
 {
     // Stalemate on 50 move rule
-    if(p_board->halfMoves == 50)
+    if (p_board->halfMoves == 50)
     {
         return 1;
     }
@@ -433,25 +436,25 @@ int8_t isCheckmate(Board *p_board)
     {
         repeats += p_board->gameHashHistory[i] == p_board->hash;
     }
-    
+
     // The board is only added to the list once a move is performed 'from' the board
     // Thus the position is repeated 3 times if it is seen 2 times before
-    if(repeats >= 2)
+    if (repeats >= 2)
     {
         return 1;
     }
 
-    List *p_legalMoves = getLegalMoves(p_board);
-    uint8_t num_moves = p_legalMoves->length;
+    ArrayList *p_legalMoves = getLegalMoves(p_board);
+    uint8_t num_moves = p_legalMoves->elements;
     freeMoveList(p_legalMoves);
 
     // Legal moves exist
-    if(num_moves > 0)
+    if (num_moves > 0)
     {
         return 0;
     }
 
-    if(isChecked(p_board, p_board->turn))
+    if (isChecked(p_board, p_board->turn))
     {
         return p_board->turn == WHITE ? BLACK : WHITE;
     }
@@ -481,7 +484,7 @@ uint8_t isChecked(Board *p_board, uint8_t color)
         }
 
         // Down right
-        if(kingFile < 7 && p_board->board[kingSquare - 7] == (PAWN | WHITE))
+        if (kingFile < 7 && p_board->board[kingSquare - 7] == (PAWN | WHITE))
         {
             return 1;
         }
@@ -549,16 +552,24 @@ uint8_t isChecked(Board *p_board, uint8_t color)
     }
 
     // Queen or bishop on diagonal
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, 1, BISHOP, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, 1, BISHOP, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, -1, BISHOP, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, -1, BISHOP, oppositeColor)) return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, 1, 1, BISHOP, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, -1, 1, BISHOP, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, 1, -1, BISHOP, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, -1, -1, BISHOP, oppositeColor))
+        return 1;
 
     // Queen or rook on file/rank
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, 0, 1, ROOK, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, 0,-1, ROOK, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, 1, 0, ROOK, oppositeColor)) return 1;
-    if(m_isSlidingChecked(p_board, kingRank, kingFile, -1, 0, ROOK, oppositeColor)) return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, 0, 1, ROOK, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, 0, -1, ROOK, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, 1, 0, ROOK, oppositeColor))
+        return 1;
+    if (m_isSlidingChecked(p_board, kingRank, kingFile, -1, 0, ROOK, oppositeColor))
+        return 1;
 
     return 0;
 }
@@ -573,9 +584,9 @@ uint8_t m_isSlidingChecked(Board *p_board, uint8_t kingRank, uint8_t kingFile, i
     while (kingRank + drank * i <= 7 && kingRank + drank * i >= 0 && kingFile + dfile * i <= 7 && kingFile + dfile * i >= 0)
     {
         uint8_t square = kingFile + dfile * i + (kingRank + drank * i) * 8;
-        if(p_board->board[square] != EMPTY)
+        if (p_board->board[square] != EMPTY)
         {
-            if(p_board->board[square] == (oppositeColor | type) || p_board->board[square] == (oppositeColor | QUEEN))
+            if (p_board->board[square] == (oppositeColor | type) || p_board->board[square] == (oppositeColor | QUEEN))
             {
                 return 1;
             }
@@ -798,118 +809,55 @@ void undoMove(Move *p_move, Board *p_board)
 }
 
 // Free all elements of the list, including the list itself
-void freeMoveList(List *p_list)
+void freeMoveList(ArrayList *p_list)
 {
-    Node *p_node = p_list->p_head;
-    while (p_node != NULL)
-    {
-        Node *p_tmp = p_node;
-        p_node = p_node->p_next;
-        free(p_tmp->p_move);
-        free(p_tmp);
-    }
+    free(p_list->array);
     free(p_list);
 }
 
-// Remove and free the node and move from a list
-void m_removeNodeFromList(List *p_list, Node *p_node)
-{
-    p_list->length--;
-
-    // Remove head
-    if (p_node == p_list->p_head)
-    {
-        // If this is the only element in the list
-        // checking against tail and not p_next in case of a link error
-        if (p_node == p_list->p_tail)
-        {
-            p_list->p_head = NULL;
-            p_list->p_tail = NULL;
-        }
-        else
-        {
-            p_list->p_head = p_node->p_next;
-            p_node->p_next->p_prev = NULL;
-        }
-    }
-    // Remove the last element
-    else if (p_list->p_tail == p_node)
-    {
-        p_node->p_prev->p_next = NULL;
-        p_list->p_tail = p_node->p_prev;
-    }
-    // Remove middle element
-    else
-    {
-        p_node->p_prev->p_next = p_node->p_next;
-        p_node->p_next->p_prev = p_node->p_prev;
-    }
-
-    free(p_node->p_move);
-    free(p_node);
-}
-
 // Adds a move containing a castle, promotion, enpassant or pawn double move to the list
-void m_addSpecialMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture, uint8_t castle, uint8_t promotion, uint8_t enpassant, uint8_t pawnDoubleMove)
+void m_addSpecialMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t capture, uint8_t castle, uint8_t promotion, uint8_t enpassant, uint8_t pawnDoubleMove)
 {
-    Move *p_move = malloc(sizeof(Move));
-    p_move->from = from;
-    p_move->to = to;
-    p_move->capture = capture;
-    p_move->castle = castle;
-    p_move->promotion = promotion;
-    p_move->enPassant = enpassant;
-    p_move->pawnDoubleMove = pawnDoubleMove;
-    m_addMovePtrToList(p_list, p_move);
+    // Double the size of the array list if there is no more space
+    if (p_list->elements == p_list->size)
+    {
+        p_list->array = realloc(p_list->array, p_list->size * 2 * sizeof(Move));
+        p_list->size *= 2;
+    }
+
+    // Set the paramaters of the move in the array list
+    p_list->array[p_list->elements].from = from;
+    p_list->array[p_list->elements].to = to;
+    p_list->array[p_list->elements].capture = capture;
+    p_list->array[p_list->elements].castle = castle;
+    p_list->array[p_list->elements].promotion = promotion;
+    p_list->array[p_list->elements].enPassant = enpassant;
+    p_list->array[p_list->elements].pawnDoubleMove = pawnDoubleMove;
+    p_list->elements++;
 }
 
 // Adds a basic move (from, to) to the list
-void m_addMoveToList(List *p_list, uint8_t from, uint8_t to, uint8_t capture)
+void m_addMoveToList(ArrayList *p_list, uint8_t from, uint8_t to, uint8_t capture)
 {
-    Move *p_move = malloc(sizeof(Move));
-    p_move->from = from;
-    p_move->to = to;
-    p_move->capture = capture;
-    p_move->castle = 0;
-    p_move->promotion = 0;
-    p_move->enPassant = 0;
-    p_move->pawnDoubleMove = 0;
-    m_addMovePtrToList(p_list, p_move);
+    // Double the size of the array list if there is no more space
+    if (p_list->elements == p_list->size)
+    {
+        p_list->array = realloc(p_list->array, p_list->size * 2 * sizeof(Move));
+        p_list->size *= 2;
+    }
+
+    // Set the paramaters of the move in the array list
+    p_list->array[p_list->elements].from = from;
+    p_list->array[p_list->elements].to = to;
+    p_list->array[p_list->elements].capture = capture;
+    p_list->array[p_list->elements].castle = 0;
+    p_list->array[p_list->elements].promotion = 0;
+    p_list->array[p_list->elements].enPassant = 0;
+    p_list->array[p_list->elements].pawnDoubleMove = 0;
+    p_list->elements++;
 }
 
-// Takes the pointer to the move, creates a node and adds it to the list
-void m_addMovePtrToList(List *p_list, Move *p_move)
+inline uint8_t m_oppositeColor(uint8_t color)
 {
-    Node *p_node = malloc(sizeof(Node));
-    p_node->p_move = p_move;
-    p_node->p_next = NULL;
-    p_node->p_prev = p_list->p_tail;
-
-    if (p_list->p_head == NULL)
-    {
-        p_list->p_head = p_node;
-    }
-
-    if (p_list->p_tail != NULL)
-    {
-        p_list->p_tail->p_next = p_node;
-    }
-
-    p_list->p_tail = p_node;
-    p_list->length++;
-}
-
-uint8_t m_oppositeColor(uint8_t color)
-{
-    if (color == WHITE)
-    {
-        return BLACK;
-    }
-    else if (color == BLACK)
-    {
-        return WHITE;
-    }
-
-    printf("Cannot find the opposite color of %d", color);
-    return EMPTY;
+    return color ^ COLOR_MASK;
 }
