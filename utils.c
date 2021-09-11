@@ -80,28 +80,23 @@ void printMove(Move *p_move)
     printf("%c%d -> %c%d\n", 'a' + f_file, f_rank + 1, 'a' + t_file, t_rank + 1);
 }
 
-void printMoveList(List *p_list)
+void printMoveList(ArrayList *p_list)
 {
-    Node *p_node = p_list->p_head;
-    uint8_t index = 0;
-    while (p_node != NULL)
+    for(uint16_t i = 0; i < p_list->elements; i++)
     {
-        printf("(%d)\t", index);
-        printMove(p_node->p_move);
-        //printf("From: %d To: %d Promotion: %d Castling: %d\n", p_node->p_move->from, p_node->p_move->to, p_node->p_move->promotion, p_node->p_move->castle);
-        p_node = p_node->p_next;
-        index++;
+        printf("(%d)\t", i);
+        printMove(&p_list->array[i]);
     }
 }
 
 // Lists all the available moves and prompts the user to select a move
 Move selectMove(Board *p_board)
 {
-    List *p_legalMoves = getLegalMoves(p_board);
+    ArrayList *p_legalMoves = getLegalMoves(p_board);
     printMoveList(p_legalMoves);
 
-    unsigned int index = p_legalMoves->length;
-    while (index >= p_legalMoves->length)
+    unsigned int index = p_legalMoves->elements;
+    while (index >= p_legalMoves->elements)
     {
         printf("Select move: \n");
         #pragma GCC diagnostic push
@@ -111,13 +106,7 @@ Move selectMove(Board *p_board)
         #pragma GCC diagnostic pop
     }
 
-    Node *p_node = p_legalMoves->p_head;
-    for (uint8_t j = 0; j < index; j++)
-    {
-        p_node = p_node->p_next;
-    }
-
-    Move move = *(p_node->p_move);
+    Move move = p_legalMoves->array[index];
     freeMoveList(p_legalMoves);
 
     return move;

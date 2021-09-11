@@ -20,7 +20,7 @@ typedef struct book_t
     struct book_node_t *currentNode;    // The current node of the board
     struct book_node_t *initialNode;    // The first node in the book, initial board
     struct book_node_t *nodes;          // List of all nodes in the book
-    uint64_t nNodes;                         // Number of nodes (boards) in the book
+    uint64_t nNodes;                    // Number of nodes (boards) in the book
     int status;                         // BOOK_ENDED, or BOOK_READY
 } Book;
 

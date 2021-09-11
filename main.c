@@ -10,6 +10,7 @@
 #include "hashing.h"
 #include "eval.h"
 #include "book.h"
+#include "sorting.h"
 
 #include "test.h"
 
@@ -29,7 +30,15 @@ int main(void)
     //__test__evaluation();
 
     Book book;
+
+    printf("Generating book...\n");
+    clock_t start = clock(), diff;
+
     generateBook(&book, 25, "uci.txt");
+
+    diff = clock() - start;
+    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Book generation time: %d sec, %d ms\n", msec / 1000, msec % 1000);
 
     Board board;
     Board *p_board = &board;
@@ -39,11 +48,10 @@ int main(void)
     int8_t boardStatus;
 
     printBoard(p_board);
-    for (uint8_t i = 0; i < 100; i++)
+    for (uint8_t i = 0; i < 20; i++)
     {
-        printf("Move number: %d\n", p_board->fullMoves);
-
-        m_playComputerTurn(p_board, &book, 6);
+        printf("Move number: %d\n", i + 1);
+        m_playComputerTurn(p_board, &book, 7);
         //m_playUserTurn(p_board, &book);
         printf("Book status: %s\n", book.status == BOOK_READY ? "in" : "out");
 
@@ -59,6 +67,9 @@ int main(void)
         if (boardStatus)
             break;
     }
+
+    extern uint64_t calls;
+    printf("Calls to getLegalMoves %ld", calls);
 
     if (boardStatus == 1)
     {
@@ -78,6 +89,8 @@ int main(void)
     }
 
     freeBook(&book);
+    extern Hashmap *p_tt;
+    freehashmap(p_tt);
 
     printf("Exit success\n");
     return 0;

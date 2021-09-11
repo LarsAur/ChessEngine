@@ -6,7 +6,7 @@
 #include "moveHandler.h"
 
 void printBoard(Board *p_board);
-void printMoveList(List *p_list);
+void printMoveList(ArrayList *p_list);
 void printMove(Move *p_move);
 Move selectMove(Board *p_board);
 

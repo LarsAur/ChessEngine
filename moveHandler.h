@@ -23,26 +23,19 @@ typedef struct move_t
     uint8_t prevHalfMoves;
 } Move;
 
-typedef struct node_t
+typedef struct arraylist_t
 {
-    struct node_t *p_next;
-    struct node_t *p_prev;
-    struct move_t *p_move;
-} Node;
+    uint16_t size;      // Size of the current allocated array
+    uint16_t elements;  // Number of elements in the allocated array
+    Move* array;        // Pointer to the array of moves
+} ArrayList;
 
-typedef struct list_t
-{
-    uint16_t length;
-    Node *p_head;
-    Node *p_tail;
-} List;
-
-List *getPseudoLegalMoves(Board *p_board);
-List* getLegalMoves(Board *p_board);
-void freeMoveList(List* p_list);
+ArrayList *getPseudoLegalMoves(Board *p_board);
+ArrayList* getLegalMoves(Board *p_board);
+void freeMoveList(ArrayList* p_list);
 void performMove(Move *p_move, Board *p_board);
 void undoMove(Move *p_move, Board *p_board);
-void filterNonCaptureMoves(List* p_legalMovesList);
+void filterNonCaptureMoves(ArrayList* p_legalMovesList);
 uint8_t isChecked(Board *p_board, uint8_t color);
 int8_t isCheckmate(Board *p_board);
 
